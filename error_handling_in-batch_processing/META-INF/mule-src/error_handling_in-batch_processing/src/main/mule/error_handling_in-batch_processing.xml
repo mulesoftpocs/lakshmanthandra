@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<file:config name="File_Config" doc:name="File Config" doc:id="7cc6a6db-b22d-4366-9562-d68927ed9aff" >
+		<file:connection workingDir="D:\Mule-4-POC\Batch-processing" />
+	</file:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="f39c292c-2883-4ed2-91a9-ad0a31292dc2" >
+		<db:my-sql-connection host="localhost" port="3306" user="root" password="Miracle@1" database="users" />
+	</db:config>
+	<flow name="error_handling_in-batch_processingFlow" doc:id="1ef75d89-329d-4cc3-862a-be39b6479b6a" >
+		<file:listener doc:id="3263cdcb-1f70-48c2-982e-fcd5e7a10662" config-ref="File_Config" directory="D:\Mule-4-POC\Batch-processing\input">
+			<scheduling-strategy >
+				<fixed-frequency frequency="1" timeUnit="MINUTES" />
+			</scheduling-strategy>
+		</file:listener>
+		<batch:job jobName="error_handling_in-batch_processingBatch_Job" doc:id="3ca478e9-09e6-47b1-9c82-da38ec99832f" maxFailedRecords="-1">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="d59a6927-0597-4414-83ea-f5bf678f0a80" >
+					<choice doc:name="Choice" doc:id="efa054de-2bd9-4949-a62c-a8ae7607cb79" >
+						<when expression='#[(payload[0].Region write "text/plain") == "Europe"]'>
+							<try doc:name="Try" doc:id="8ca32b33-dc38-40b4-9a9a-64fc54912cc5" >
+								<raise-error doc:name="Raise error" doc:id="415fc167-8a7e-4c2f-a841-4c47ad6b600c" type="MY:EXCEPTION" description="Raising error in case region is Europe"/>
+								<error-handler>
+									<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="62215dcc-5a2c-4ff5-bd21-d4041242cc6d" >
+										<logger level="INFO" doc:name="before try catch" doc:id="dd8af351-e979-421d-9320-681d22b512dc" message="before try catch" />
+									</on-error-propagate>
+								</error-handler>
+							</try>
+							<logger level="INFO" doc:name="after try catch" doc:id="1440cba5-7110-4647-801a-ea406fcd28de" message="after try catch"/>
+						</when>
+						<otherwise>
+							<ee:transform doc:name="Transform Message" doc:id="1d37e2c6-8b84-4ed5-a999-7d4a01e0e41f">
+											<ee:message>
+												<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+											</ee:message>
+										</ee:transform>
+							<logger level="INFO" doc:name="Process records" doc:id="1dfe2fe1-b738-4dc5-9a89-93096d8fa427" message="#[payload]" />
+						</otherwise>
+					</choice>
+					<batch:aggregator doc:name="Batch_Aggregator_DB_insert" doc:id="75c6321e-d012-44fb-8f58-7c8104bd53fc" size="3">
+						<ee:transform doc:name="Transform Message" doc:id="b949f487-e197-49e8-af02-949171ddaa0d" >
+							<ee:message >
+								<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map (indexOfPayload01)->
+{
+	"Region": payload.Region, 
+	"Country": payload.Country, 
+	"ItemType": payload.ItemType, 
+	"SalesChannel": payload.SalesChannel ,
+	"OrderPriority": payload.OrderPriority,
+	"OrderDate": payload.OrderDate, 
+	"OrderID": payload.OrderID, 
+	"ShipDate": payload.ShipDate, 
+	"UnitsSold": payload.UnitsSold, 
+	"UnitPrice": payload.UnitPrice, 
+	"UnitCost": payload.UnitCost, 
+	"TotalRevenue": payload.TotalRevenue, 
+	"TotalCost": payload.TotalCost, 
+	"TotalProfit": payload.TotalProfit
+}]]></ee:set-payload>
+							</ee:message>
+						</ee:transform>
+						<logger level="INFO" doc:name="Logger" doc:id="9420d211-26ff-44ce-98d7-80b889b3ecb3" message="#[payload]"/>
+					</batch:aggregator>
+				</batch:step>
+				<batch:step name="Batch_Step1_failed_records" doc:id="6fa77b1f-da86-4561-83df-1c811e91dd70" acceptPolicy="ONLY_FAILURES">
+					<ee:transform doc:name="Transform Message for failed records" doc:id="b50ddee0-4591-4c75-abd9-eb0c801a0edb">
+						<ee:message>
+							<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload ]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<logger level="INFO" doc:name="failed records" doc:id="8ed4cd1d-1589-46dd-80e8-0d0a7a16bd2f" message="#[payload]"/>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+		<error-handler >
+			<on-error-continue enableNotifications="true" logException="true" doc:name="On Error Continue" doc:id="a5609fe1-0598-4c30-a7b0-ef3506cf35a0" type="EXPRESSION, STREAM_MAXIMUM_SIZE_EXCEEDED">
+				<logger level="ERROR" doc:name="Main flow error" doc:id="f1eb8674-a101-4ef8-a0bf-265fb7f1b796" message='#["error": error.description]'/>
+			</on-error-continue>
+		</error-handler>
+	</flow>
+</mule>
