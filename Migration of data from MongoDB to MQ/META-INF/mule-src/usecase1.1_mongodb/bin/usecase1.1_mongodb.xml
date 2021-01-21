@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:batch="http://www.mulesoft.org/schema/mule/batch"
+	xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
+	xmlns:anypoint-mq="http://www.mulesoft.org/schema/mule/anypoint-mq" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cbc31e34-1801-4a7e-92b4-dfc45b76c010" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="22de5286-ff08-4065-9ef0-64106e2ec4f0" >
+		<file:connection workingDir="D:\MuleSoft\File connector" />
+	</file:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="ef8c7a1f-f5ce-46d3-8711-39ba3e6fa9ee" >
+		<db:mssql-connection host="172.17.0.180" instanceName="coke" user="coke_user" password="Miracle@123" databaseName="COKE" />
+	</db:config>
+	<flow name="usecase1.1_mongodbFlow" doc:id="4c731cf8-f421-4835-a300-be4b230e715f" >
+		<scheduler doc:name="Scheduler" doc:id="a014f422-dacd-46ba-b2c5-e0bd9121c1e8" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="MINUTES" frequency="5"/>
+			</scheduling-strategy>
+		</scheduler>
+		<file:read doc:name="Read" doc:id="4fd3796b-d11d-41ab-ba1f-31ea9615db49" config-ref="File_Config" path="D:\MuleSoft\File connector\csv\db.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="be780dc1-2fb9-4b27-bfe2-41f2b052e744" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	eid: payload01.eid,
+	ename: payload01.ename,
+	esalary: payload01.esalary
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="98566fc5-9be9-4e5d-8139-45ecdec4702e" message="#[payload]"/>
+		<mongo:insert-documents doc:name="Insert documents" doc:id="7c687b00-dd5b-457d-9f57-996537d9cfdc" config-ref="MongoDB_Config" collectionName="Employees" />
+		<logger level="INFO" doc:name="Logger" doc:id="270a1b16-feee-4e7b-89fd-1850a376e565" message="json data inserted" />
+		<flow-ref doc:name="Flow Reference" doc:id="f2606876-9b35-40be-87d3-3e36518882da" name="usecase1.1_mongodbFlow1"/>
+	</flow>
+	<flow name="usecase1.1_mongodbFlow1" doc:id="1916623c-dc64-4693-ab76-073e30c6f686" >
+		<mongo:find-documents collectionName="Employees" doc:name="Find documents" doc:id="023637d6-8a26-4ed1-83f6-7d029d463200" config-ref="MongoDB_Config" fields="eid,ename,esalary">
+				</mongo:find-documents>
+		<ee:transform doc:name="Transform Message" doc:id="795a0854-67bd-4770-b98a-b988031f3655">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload map(data, index)->{
+	eid: data.eid,
+	ename: data.ename,
+	esalary: data.esalary
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="336a95c0-ab6c-405c-b818-c46e694ac611" message="#[payload]" />
+		<batch:job jobName="usecase1.1_mongodbBatch_Job" doc:id="54f37bf2-d52d-4596-974c-2b9d8a3adc76" blockSize="3">
+			<batch:process-records >
+				<batch:step name="Batch_Step" doc:id="d43f4347-343c-4acc-bfea-aa128f1e7c8f" >
+					<ee:transform doc:name="Transform Message" doc:id="df2b5676-36b9-427f-a97d-ae8ed6459a41" >
+						<ee:message >
+							<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+Employees:payload]]></ee:set-payload>
+						</ee:message>
+					</ee:transform>
+					<batch:aggregator doc:name="Batch Aggregator" doc:id="25595792-d498-4045-8157-af67e954751c" size="3">
+						<ee:transform doc:name="Transform Message" doc:id="8b94f751-6ac2-49e2-a5b5-3a6816b83c4a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	Employees:
+	Employee: payload.Employees map (data , index) ->{
+		eid: data.eid,
+		ename: data.ename,
+		esalary: data.esalary
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+						<jms:publish doc:name="Publish" doc:id="3e143118-fbb6-4a9c-8a7e-47afd0c08077" config-ref="JMS_Config" destination="Output"/>
+						<logger level="INFO" doc:name="Logger" doc:id="fb550e4b-b948-4da0-bb4e-29087e4c92bc" message="Message sent to MQ"/>
+					</batch:aggregator>
+				</batch:step>
+			</batch:process-records>
+		</batch:job>
+	</flow>
+</mule>
