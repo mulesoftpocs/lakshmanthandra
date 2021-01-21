@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="equality_and_relatonal_operatorsFlow" doc:id="b684ae21-ed2b-437b-8f56-fa3ceb82d18a" >
+		<http:listener doc:name="Listener" doc:id="eb115720-0645-4f21-b628-bd403bcd9f13" config-ref="HTTP_Listener_config" path="/equ"/>
+		<ee:transform doc:name="Transform Message" doc:id="687b97b8-c43c-4fd4-b732-243b53488814" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"5<8":5<8,
+	"4>4":4>4,
+	"5<=6":5<=6
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="ec508d1e-e672-40c6-9147-e43bf6f1b1cc" />
+	</flow>
+</mule>

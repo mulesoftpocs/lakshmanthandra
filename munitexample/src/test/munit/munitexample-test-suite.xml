@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:munit="http://www.mulesoft.org/schema/mule/munit" xmlns:munit-tools="http://www.mulesoft.org/schema/mule/munit-tools"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xsi:schemaLocation="
+		http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+		http://www.mulesoft.org/schema/mule/munit http://www.mulesoft.org/schema/mule/munit/current/mule-munit.xsd
+		http://www.mulesoft.org/schema/mule/munit-tools  http://www.mulesoft.org/schema/mule/munit-tools/current/mule-munit-tools.xsd">
+	<munit:config name="munitexample-test-suite.xml" />
+	<munit:test name="munitexample-test-suite-munitexampleFlowTest" doc:id="6cb853af-6636-4eae-9c23-c0076b2260c9" description="Test">
+		<munit:behavior >
+			<munit:set-event doc:name="Set Event" doc:id="360771ce-7e48-4e37-8bef-d22f7a9627f6" >
+				<munit:attributes value="#[{queryParams : {number1:'10', number2:'20'}}]" />
+			</munit:set-event>
+		</munit:behavior>
+		<munit:execution >
+			<flow-ref doc:name="Flow-ref to munitexampleFlow" doc:id="c6fc483b-229c-4608-a0da-a187443d6414" name="munitexampleFlow"/>
+		</munit:execution>
+	</munit:test>
+
+
+</mule>

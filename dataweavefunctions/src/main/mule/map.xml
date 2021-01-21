@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mapFlow" doc:id="5bef51dd-99ee-4945-9a58-242c2f4f85b8" >
+		<http:listener doc:name="Listener" doc:id="738b68e6-5e8c-4dc8-aa9b-ebc6a771ae82" config-ref="HTTP_Listener_config" path="/map"/>
+		<ee:transform doc:name="Transform Message" doc:id="f5169c19-5399-4a81-8bb3-2ca3681e4ddc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	(
+		['welcome','to','miracle']map((values,index)->
+			{
+				(index):values
+				
+			}
+		)
+	)
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

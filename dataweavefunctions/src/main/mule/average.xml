@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="averageFlow" doc:id="fd17342c-73ce-4134-91a3-73747edb94bb" >
+		<http:listener doc:name="Listener" doc:id="3c0d9939-512e-4621-96f6-2c70e73b75ef" config-ref="HTTP_Listener_config" path="/average"/>
+		<ee:transform doc:name="Transform Message" doc:id="b1101ad8-2719-48aa-b0c3-14b0ea79dbc5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+var json=
+{
+	a:avg([15,21]),
+	b:avg([5,4,3,9])
+}
+output application/json
+---
+json]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

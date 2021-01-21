@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="pluckFlow" doc:id="6426729a-7fc2-4334-997b-f9704917c882" >
+		<http:listener doc:name="Listener" doc:id="88482c90-15da-4c2a-a06b-13406b2704f2" config-ref="HTTP_Listener_config" path="/pluck"/>
+		<ee:transform doc:name="Transform Message" doc:id="325e8711-9f5d-4e8d-878a-01b7a083f426" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"0":"welcome",
+	"1":"to",
+	"2":"miracle"
+}
+
+pluck(values)->values]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

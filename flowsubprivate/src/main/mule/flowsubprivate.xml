@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="f1f7a7b4-161d-4f12-983a-9b8c2b186c7d" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<flow name="mainflow" doc:id="0adef144-4b20-473a-af95-5a287fc733c8" >
+		<http:listener doc:name="/GET hello" doc:id="be4ce18b-13ce-4a51-a346-9b6c672c7ed6" config-ref="HTTP_Listener_config" path="/hello" allowedMethods="GET"/>
+		<set-variable value="10" doc:name="Set Variable" doc:id="21d28006-652b-4ac9-ad4f-24dc16f3a599" variableName="var1"/>
+		<flow-ref doc:name="Flow Reference" doc:id="4451f427-31df-4cd8-828b-bc78a9bece41" name="subflow"/>
+		<logger level="INFO" doc:name="Logger" doc:id="af2cb2ad-6d51-40c8-916d-46d3f1077c61" message="#[vars.var1]"/>
+	</flow>
+	<flow name="privateflow" doc:id="528e51bd-5133-4c7e-a662-d3bdbdee8963" >
+		<logger level="INFO" doc:name="Logger" doc:id="bafbec05-e0d4-4194-b3ec-113af554db2f" message="private flow invoked"/>
+		<set-variable value="50" doc:name="Set Variable" doc:id="08610edc-36c2-48d9-b55c-80180176c277" variableName="var1"/>
+	</flow>
+	<sub-flow name="subflow" doc:id="fc68d6ac-5409-4a37-b995-04135769761c" >
+		<logger level="INFO" doc:name="Logger" doc:id="7a588965-1ef1-48c5-ade3-430229e4472f" message="sub flow got invoked"/>
+		<set-variable value="20" doc:name="Set Variable" doc:id="3dd30def-ec5f-4a76-973b-c341ace3d62d" variableName="var1"/>
+	</sub-flow>
+</mule>

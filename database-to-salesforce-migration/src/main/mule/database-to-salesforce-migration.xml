@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:batch="http://www.mulesoft.org/schema/mule/batch" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/batch http://www.mulesoft.org/schema/mule/batch/current/mule-batch.xsd">
+	<flow name="database-to-salesforce-migrationFlow" doc:id="06974d68-b687-444e-8bfe-a840b739de78" >
+		<http:listener doc:name="Listener" doc:id="9cfc02c9-c255-46dd-844e-a91099c3295c" />
+		<logger level="INFO" doc:name="Logger" doc:id="9d630e98-6890-43ca-b99a-da053746d4c1" />
+		<db:select doc:name="Select" doc:id="c85d967f-1d3e-4f09-bdbc-cc80688c8f98" />
+		<logger level="INFO" doc:name="Logger" doc:id="842a5d99-820a-4ea3-8e54-d00e0ebba1eb" />
+		<logger level="INFO" doc:name="Logger" doc:id="887ab29a-31c1-4349-bdb6-f1d2253340d3" />
+		<flow-ref doc:name="Flow Reference" doc:id="79c0802d-e273-4e24-9f8f-d82671e38967" />
+		<set-payload value="#[payload]" doc:name="Set Payload" doc:id="941e2ac6-301f-45db-a78a-a215fdeb9aac" />
+	</flow>
+	<flow name="database-to-salesforce-migrationFlow1" doc:id="ff0bb9d1-32b6-4b62-b19f-d83e3a990f2e" >
+		<logger level="INFO" doc:name="Logger" doc:id="b42b5275-06bb-43d6-b921-fc58d580603c" />
+		<ee:transform doc:name="Transform Message" doc:id="188e6840-09f3-4b97-afa2-cb6fda1e46e3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

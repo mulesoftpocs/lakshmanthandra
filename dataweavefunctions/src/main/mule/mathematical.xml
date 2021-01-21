@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<flow name="mathematicalFlow" doc:id="79068afb-309a-42fe-92db-c296e490e7ab" >
+		<http:listener doc:name="Listener" doc:id="06b50a1c-2ced-48dc-bc9c-eb04f03752ec" config-ref="HTTP_Listener_config" path="/math"/>
+		<ee:transform doc:name="Transform Message" doc:id="ddaea168-fad6-458f-b97b-80b87b86792e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[{
+	"5+6":(5+6),
+	"6-4":(5-6),
+	"5*6":(5*5),
+	"6/3":(6/3)
+},
+{
+	"5+6":(5+6),
+	"6-4":(5-6),
+	"5*6":(5*5),
+	"6/3":(6/3)
+}
+
+]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>
