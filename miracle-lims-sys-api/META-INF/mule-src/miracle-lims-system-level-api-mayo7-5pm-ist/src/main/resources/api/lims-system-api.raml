@@ -1,0 +1,816 @@
+#%RAML 1.0
+baseUri: https://anypoint.mulesoft.com/mocking/api/v1/links/23ff8c00-63f0-413b-8110-aff6f910eb38/ # 
+title: LIMS-SYSTEM-API
+version: v2
+mediaType: application/json
+types:
+  borrow: !include /exchange_modules/1eff9a29-42ea-47b8-8e8d-cbb496ae6f7d/limss-datatypes/1.0.0/borrow.raml
+  item: !include examples/item.raml
+  history_logs: !include examples/history_logs.raml
+  item_inventory: !include examples/item_inventory.raml
+  item_stock: !include examples/item_stock.raml
+  member: !include examples/member.raml
+  reservation_status: !include examples/reservation_status.raml
+  room: !include examples/room.raml
+  room_equipment: !include examples/room_equipment.raml
+  user: !include examples/user.raml
+  item_transfer: !include examples/item_transfer.raml
+  reservation: !include examples/reservation.raml
+  equipment: !include examples/equipment.raml
+  equipment_inventory: !include examples/equipment_inventory.raml
+
+/borrow:
+  get:
+    description: Retrieves all borrow data
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/getBorrow/getBorrow.json
+          
+  
+      
+  post:
+    description: To create new borrow data
+    body:
+      application/json:
+        example: !include /examples/requests/post_borrow.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include examples/responses/post_borrow.json
+                         
+  put:
+    
+    queryParameters: 
+      member_id : integer
+    body:
+      application/json:
+        example:
+          !include examples/requests/put_borrow.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/put_borrow.json
+ 
+  delete:
+    queryParameters:
+      id: number
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_borrow.json
+
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/responses/get_borrowById.json
+    
+            
+    delete:  
+      responses:
+        204:
+          body:
+            application/json:
+              example: !/examples/responses/delete_borrow_ById.json
+                            
+/item: 
+  get:
+    description: Retrives all item info 
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/getItem/getItem.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_item.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include examples/responses/post_item.json
+              
+    
+      
+            
+  put:
+    queryParameters:
+      i_category: string
+    body:
+      application/json:
+        example: !include examples/requests/put_item.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_item.json
+          
+  delete:
+    queryParameters:
+      id: number
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include /examples/responses/delete_item.json
+                
+    
+              
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/responses/get_itemById.json
+     
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include examples/responses/get_itemById.json
+              
+              
+/history_logs:
+  get:
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/getHistory_logs/getHistory_logs.json
+          
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_history_logs.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_history.json
+              
+       
+  put:
+    queryParameters:
+      table_name: string
+    body:
+      application/json:
+        example: !include examples/requests/put_history.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_history.json
+     
+    
+  delete:
+    queryParameters:
+      id: number
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include /examples/responses/delete_history.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/responses/get_historyById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_historyById.json
+/item_inventory:
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_item_inventory.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_item_inventory.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_item_inventory.json
+              
+       
+  put:
+    queryParameters:
+      id: string
+    body:
+      application/json:
+        example: !include examples/requests/put_item_inventory.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_item_inventory.json
+     
+    
+  delete:
+    queryParameters:
+      id: number
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include /examples/responses/delete_item_inventory.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include examples/responses/get_item_inventoryById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_item_inventoryById.json          
+
+/item_stock:
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_item_stock.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_item_stock.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_item_stock.json
+              
+       
+  put:
+    queryParameters:
+      item_id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_item_stock.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_item_stock.json
+     
+    
+  delete:
+    queryParameters:
+      item_id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_item_stock.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_item_stockById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_item_stockById.json
+              
+              
+/member:
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_member.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_member.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_member.json
+              
+       
+  put:
+    queryParameters:
+      m_department: string
+    body:
+      application/json:
+        example: !include examples/requests/put_member.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_member.json
+     
+    
+  delete:
+    queryParameters:
+      m_department: string
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_member.json
+           
+  
+  /{m_fname}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_memberById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_memberById.json
+          
+  
+  
+/reservation_status:
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_reservation_status.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_reservation_status.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_reservation_status.json
+              
+       
+  put:
+    queryParameters:
+      reservation_code: string
+    body:
+      application/json:
+        example: !include examples/requests/put_reservation_status.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_reservation_status.json
+     
+    
+  delete:
+    queryParameters:
+      reservation_code: string
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_reservation_status.json
+           
+  
+  /{reservation_code}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_reservation_status.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_reservation_status.json      
+
+/room: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_room.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_room.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_room.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_room.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_room.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_room.json
+           
+  
+  /{rm_name}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_roomBy_rm_name.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_roomBy_rm_name.json      
+
+/room_equipment: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_room_equipment.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_room_equipment.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_room_equipment.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_room_equipment.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_room_equipment.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_room_equipment.json
+           
+  
+  /{equipment_id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_room_equipmentById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_room_equipmentById.json
+ 
+/user: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_user.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_user.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_user.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_user.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_user.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_user.json
+           
+  
+  /{name}: 
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_userById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_userById.json
+
+/item_transfer: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_item_transfer.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_item_transfer.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_item_transfer.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_item_transfer.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_item_transfer.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_item_transfer.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_item_transferById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_item_transferById.json
+
+/reservation: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_reservation.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_reservation.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_reservation.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_reservation.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_reservation.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_reservation.json
+           
+  
+  /{reservation_code}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_reservationById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_reservationById.json
+
+/equipment: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_equipment.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_equipment.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_equipment.json
+              
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_equipment.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_equipment.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_equipment.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_equipmentById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_equipmentById.json
+
+/equipment_inventory: 
+  get: 
+    responses: 
+      200:
+        body: 
+          application/json:
+            example: !include examples/responses/get_equipment_inventory.json
+  post:
+    body:
+      application/json:
+        example: !include examples/requests/post_equipment_inventory.json
+    responses:
+      201:
+        body:
+          application/json:
+            example: !include /examples/responses/post_equipment_inventory.json
+          
+       
+  put:
+    queryParameters:
+      id: integer
+    body:
+      application/json:
+        example: !include examples/requests/put_equipment_inventory.json
+    responses:
+      200:
+        body:
+          application/json:
+            example: !include examples/responses/put_equipment_inventory.json
+     
+    
+  delete:
+    queryParameters:
+      id: integer
+    responses:
+      204:
+        body:
+          application/json:
+            example: !include examples/responses/delete_equipment_inventory.json
+           
+  
+  /{id}:
+    get:
+      responses:
+        200:
+          body:
+            application/json:
+              example: !include /examples/responses/get_equipment_inventoryById.json
+    
+    delete:
+      responses:
+        204:
+          body:
+            application/json:
+              example: !include /examples/responses/delete_equipment_inventoryById.json                                          

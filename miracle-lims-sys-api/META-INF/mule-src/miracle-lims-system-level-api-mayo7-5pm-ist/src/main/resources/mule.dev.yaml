@@ -1,0 +1,7 @@
+ # properties that to be used in development 
+db:
+  host: "localhost"
+  port: "3306"
+  user: "root"
+  password: "Miracle@1"
+  database: "users"

@@ -1,0 +1,1786 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns="http://www.mulesoft.org/schema/mule/core"
+	xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<configuration doc:name="Configuration" doc:id="700e7c68-a441-4419-9811-8a3d8b2498ff" defaultErrorHandler-ref="errorError_Handler" />
+	<flow name="get-item" doc:id="52deb383-83aa-43ae-9fbb-6a5370cd2b86" >
+		<db:select doc:name="Get all item records" doc:id="6651d0c3-a2d2-42e2-8fc3-7959a1e6d2dd" config-ref="lims-db-config">
+			<db:sql >select * from item</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="94cc53c1-430f-47b0-8280-5cbee7af8880" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of all Item records" doc:id="4da6ae6c-354e-45e5-a343-8cb0e3a3d81f" message="#[payload]"/>
+	</flow>
+	<flow name="create-item" doc:id="7f9b2414-7f3d-46f1-ac8a-2541387e1bc3" >
+		<db:insert doc:name="Create new item record" doc:id="405d7b47-c9ae-4274-b415-20564c32f679" config-ref="lims-db-config">
+			<db:sql >insert into item(id, i_deviceID, i_model, i_category, i_brand, i_description, i_type, item_rawstock, i_status, i_mr, i_price, i_photo) values(:id, :i_deviceID, :i_model, :i_category, :i_brand, :i_description, :i_type, :item_rawstock, :i_status, :i_mr, :i_price, :i_photo)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"i_deviceID": payload.i_deviceID, 
+	"i_model": payload.i_model, 
+	"i_category": payload.i_category,
+	"i_brand": payload.i_brand, 
+	"i_description": payload.i_description, 
+	"i_type": payload.i_type, 
+	"item_rawstock": payload.item_rawstock, 
+	"i_status": payload.i_status, 
+	"i_mr": payload.i_mr, 
+	"i_price": payload.i_price, 
+	"i_photo": payload.i_photo
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Into Json format" doc:id="c899e1fa-61af-42a2-aef4-99256029d900" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"item record created successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of new Item record created" doc:id="13f62ad5-b173-4057-a4fe-edeabc99955a" message="#[payload]"/>
+	</flow>
+	<flow name="update-item" doc:id="a6b19c2a-6b23-46b9-884f-a41737e5c469" >
+		<db:update doc:name="Update existed item record" doc:id="9a722bb0-d8d3-4ce7-ad3b-3b6ed9d06630" config-ref="lims-db-config">
+			<db:sql >update item set i_description=:i_description where i_category=:i_category</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"i_description": payload.i_description,
+	"i_category": attributes.queryParams.i_category
+	
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="8d0c2372-df14-4142-8bc5-b23a15cbd8a8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"item record updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Resposne of updated existed Item record" doc:id="a9fb7cb2-67ea-4d7e-b601-d45026a9d7b6" message="one row updated"/>
+	</flow>
+	<flow name="delete-item" doc:id="e2f74602-1fe5-443e-974c-7570085ab37d" >
+		<db:delete doc:name="Delete item record" doc:id="359130d4-06b5-434a-9851-64fe85c6ab27" config-ref="lims-db-config">
+			<db:sql >delete from item where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="595264e9-6a9b-4e28-af59-28c1b8f7d58d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"one item deleted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Resposne of deleted Item record" doc:id="b11fde5e-aaf1-4cff-8adb-346f64a33ae6" message="#[payload]"/>
+	</flow>
+	<flow name="get-item-ById" doc:id="2ff09b36-0d7a-420f-943e-024ef62837ae" >
+		<db:select doc:name="Get item record by ID" doc:id="681e002b-f318-4b5b-83c6-c7b8d0a23692" config-ref="lims-db-config">
+			<db:sql >select * from item where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="333ccfa7-9c46-40b9-beb7-541fec84f684" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of Item based on Id" doc:id="14faa9f3-6538-4574-80aa-d3787a7b38d9" message="#[payload]"/>
+	</flow>
+	<flow name="delete-item-ById" doc:id="d66f0e08-d3af-4545-942b-f420c6290b44" >
+		<db:delete doc:name="Delete item record by ID" doc:id="601c6ad2-336a-43fb-bee7-b6fe152c7ab8" config-ref="lims-db-config">
+			<db:sql >delete from item where  id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="f2f2c5a3-585e-4a6e-bdac-174886100562" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+
+{
+	"message":"deleted successfully"
+}
+]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted Item record by Id" doc:id="90e60ed0-3ccb-4b8e-a259-549e4ccea6b3" message="#[payload]"/>
+	</flow>
+	<flow name="get-borrow" doc:id="3d7d4d49-0c80-4401-99d0-300eed46c5cf" >
+		<ee:transform doc:name="Transform Message" doc:id="539132dd-cd76-439b-8100-059bcaa5b7a5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+[{
+  "id": 1,
+  "date_borrow": "2017-02-21 11:12:17",
+  "borrowcode": "22120170412171",
+  "member_id": 7,
+  "item_id": 16,
+  "stock_id": 18,
+  "user_id": 1,
+  "room_assigned": 8,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:12:47" 
+},
+{
+  "id": 2,
+  "date_borrow": "2017-02-21 11:12:17",
+  "borrowcode": "22120170436071",
+  "member_id": 1,
+  "item_id": 16,
+  "stock_id": 18,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:33" 
+},
+{
+  "id": 3,
+  "date_borrow": "2017-02-21 11:37:01",
+  "borrowcode": "22120170437011",
+  "member_id": 7,
+  "item_id": 26,
+  "stock_id": 24,
+  "user_id": 1,
+  "room_assigned": 4,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:31" 
+},
+{
+  "id": 4,
+  "date_borrow": "2017-02-21 11:41:12",
+  "borrowcode": "22120170441121",
+  "member_id": 1,
+  "item_id": 16,
+  "stock_id": 18,
+  "user_id": 1,
+  "room_assigned": 6,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:31" 
+},
+{
+  "id": 5,
+  "date_borrow": "2017-02-21 11:43:39",
+  "borrowcode": "22120170443391",
+  "member_id": 4,
+  "item_id": 17,
+  "stock_id": 20,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:33" 
+},
+{
+  "id": 6,
+  "date_borrow": "2017-02-21 11:45:31",
+  "borrowcode": "22120170445311",
+  "member_id": 10,
+  "item_id": 26,
+  "stock_id": 24,
+  "user_id": 1,
+  "room_assigned": 8,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:32" 
+},
+{
+  "id": 7,
+  "date_borrow": "2017-02-21 11:46:36",
+  "borrowcode": "22120170446361",
+  "member_id": 4,
+  "item_id": 25,
+  "stock_id": 23,
+  "user_id": 1,
+  "room_assigned": 8,
+  "status": 2,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:48:31" 
+},
+{
+  "id": 8,
+  "date_borrow": "2017-02-21 11:48:49",
+  "borrowcode": "22120170448491",
+  "member_id": 4,
+  "item_id": 17,
+  "stock_id": 20,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 1,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "NULL" 
+},
+{
+  "id": 9,
+  "date_borrow": "2017-02-21 11:50:40",
+  "borrowcode": "22120170450401",
+  "member_id": 10,
+  "item_id": 18,
+  "stock_id": 21,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 1,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "NULL" 
+},
+{
+  "id": 10,
+  "date_borrow": "2017-02-21 11:51:30",
+  "borrowcode": "22120170451301",
+  "member_id": 8,
+  "item_id": 24,
+  "stock_id": 22,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 1,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "NULL" 
+},
+{
+  "id": 11,
+  "date_borrow": "2017-02-21 11:52:38",
+  "borrowcode": "22120170452381",
+  "member_id": 6,
+  "item_id": 26,
+  "stock_id": 24,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 1,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "NULL" 
+},
+{
+  "id": 12,
+  "date_borrow": "2017-02-21 18:48:52",
+  "borrowcode": "22120171148521",
+  "member_id": 4,
+  "item_id": 16,
+  "stock_id": 18,
+  "user_id": 1,
+  "room_assigned": 7,
+  "status": 1,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "NULL" 
+}]]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<db:select doc:id="683ef49c-b1e1-4172-b08d-19b6e1b3465b" config-ref="lims-db-config" doc:name="Get All Borrow Details From DB">
+			<db:sql >SELECT  * FROM borrow;</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a6a45bbc-da14-480b-ba6f-13ff8a7807e6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of all borrow records" doc:id="68fa9e9c-4b51-42fc-bb6d-63cc8889abf0" message="#[payload]"/>
+	</flow>
+	<flow name="create-borrow" doc:id="e94fa987-7a4e-43f1-ad6c-477a36711bc1" >
+		<db:insert doc:name="Create new borrow record" doc:id="e5b29cad-f33f-41f5-b4aa-8c8488f0337d" config-ref="lims-db-config">
+			<db:sql >insert into borrow (id, date_borrow, borrowcode, member_id, item_id, stock_id, user_id, room_assigned, status, time_limit, date_return) values
+(:id, :date_borrow, :borrowcode, :member_id, :item_id, :stock_id, :user_id, :room_assigned, :status, :time_limit, :date_return)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"date_borrow": payload.date_borrow, 
+	"borrowcode": payload.borrowcode, 
+	"member_id": payload.member_id, 
+	"item_id": payload.item_id, 
+	"stock_id": payload.stock_id, 
+	"user_id": payload.user_id, 
+	"room_assigned": payload.room_assigned, 
+	"status": payload.status, 
+	"time_limit": payload.time_limit, 
+	"date_return": payload.date_return
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="87e45bca-0f05-4f03-ab96-ad06bd2525c7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"data inserted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of new borrow record" doc:id="b8278631-14eb-4ecf-8bff-665b2736114c" message="#[payload]"/>
+	</flow>
+	<flow name="update-borrow" doc:id="5fabb632-60cb-47a1-86f8-dc6c67abd11f" >
+		<db:update doc:name="Update existed borrow record" doc:id="402acc08-11d0-4e0c-b345-85c2589a5aed" config-ref="lims-db-config">
+			<db:sql >update borrow set time_limit=:time_limit where member_id=:member_id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"member_id": attributes.queryParams.member_id,
+	"time_limit": payload.time_limit
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="7a698db0-044b-4fce-8a43-e54e485e9e9b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"borrow data updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updated existed borrow record" doc:id="a9be0285-c460-4896-a901-75891aacb1c1" message="#[payload]"/>
+	</flow>
+	<flow name="delete-borrow" doc:id="7f617aa6-ed67-49f9-aeb5-79001dafc2fd" >
+		<db:delete doc:name="Delete borrow record" doc:id="688945e1-f84b-45e8-a111-0f297d4c4041" config-ref="lims-db-config">
+			<db:sql >delete from borrow where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="d5fe9858-19a2-4430-9911-5b33bdcd4dfe" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[output application/json
+---
+{
+	message: "borrow record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted borrow record" doc:id="1e874fb4-bcf7-4c4f-b669-337b075bb464" message="#[payload]"/>
+	</flow>
+	<flow name="get-borrow-ById" doc:id="843218b4-303b-413f-8ff8-78c7cf57f4d3" >
+		<db:select doc:name="Get borrow record by ID" doc:id="1d878d27-710c-4dd5-aa8a-05f421fa16ad" config-ref="lims-db-config">
+			<db:sql >select * from borrow where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="9df5b62a-9d4a-429c-affd-01389db4d4a8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of borrow record by Id" doc:id="ae35d7c2-b7de-4fc6-82d3-953a9be6baa1" message="#[payload]"/>
+	</flow>
+	<flow name="del-borrow-ById" doc:id="432a9bcd-c452-4c5e-aa87-cee7de905b74" >
+		<db:delete doc:name="Delete borrow record by ID" doc:id="dec955d1-c553-461b-9772-253df2bec374" config-ref="lims-db-config">
+			<db:sql >delete from borrow where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="f2554a57-77fb-4bd4-a496-f41fd77bc642" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	'message':"borrow data deleted based on Id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted borrow record by Id" doc:id="f351311d-1591-4049-8ab9-19e14bd218fd" message="#[payload]"/>
+	</flow>
+	<flow name="update-history_log" doc:id="408449dd-3173-43ba-8e7e-7e6c0de32a80" >
+		<db:update doc:name="Update existed history_log record" doc:id="58ce907c-00d5-4f48-9e00-e859858bbe38" config-ref="lims-db-config">
+			<db:sql >update history_logs set description=:description where table_name=:table_name</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"table_name": attributes.queryParams.table_name,
+	"description": payload.description
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="78155e6e-be9a-4d2b-91d1-5d9ba535c252" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "message":"history_log record updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updated existed history_log record" doc:id="af6d8635-1b9b-4bdc-be84-aaf2949a28e5" />
+	</flow>
+	<flow name="create-history_log" doc:id="fac8d7df-4f7d-4a90-8cd4-756fe99598bf" >
+		<db:insert doc:name="Create new history_log record" doc:id="7c13fb9e-4979-4aff-8d16-786a6bfa5dee" config-ref="lims-db-config">
+			<db:sql >
+insert into history_logs (id, description, table_name, status_name, user_id, user_type, date_created) values (:id, :description, :table_name, :status_name, :user_id, :user_type, :date_created)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"description": payload.description, 
+	"table_name": payload.table_name, 
+	"status_name": payload.status_name, 
+	"user_id": payload.user_id, 
+	"user_type": payload.user_type, 
+	"date_created": payload.date_created
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="f55a7137-8298-43ca-8b2d-df087f6f6492" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+  "message":"data inserted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of new history_log record created" doc:id="a8ed67c1-ee12-47a5-b3eb-344c1a0cc758" message="#[payload]"/>
+	</flow>
+	<flow name="get-history_log" doc:id="5921a814-8903-44d1-835e-7f00e9d486f0" >
+		<db:select doc:name="Get all history_log records" doc:id="ae5cc765-c9df-4a09-94bf-1c0d9b34c072" config-ref="lims-db-config">
+			<db:sql >select * from history_logs</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7a01b50e-dc3d-40df-80ad-621c77495502" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of all history_log records" doc:id="3677b610-87a7-4340-8f18-88ec5003a3ec" message="#[payload]"/>
+	</flow>
+	<flow name="delete-history_log" doc:id="93367aa0-080c-4ee5-9772-e28ebb256ca6" >
+		<db:delete doc:name="Delete history_log record" doc:id="e810eb86-90d9-4c95-99d8-01e7840bcd63" config-ref="lims-db-config">
+			<db:sql >delete from history_logs where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="28465ffe-cf1e-4f5c-b2f6-54181a1b33f6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	'message':"history_log data deleted based on Id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted history_log record" doc:id="9ec84eca-9fc1-48cc-8ccc-01d6f35ff77b" message="#[payload]"/>
+	</flow>
+	<flow name="get-history_log-ById" doc:id="6d33dd60-2eb5-4241-b286-b991c6e01b35" >
+		<db:select doc:name="Get history_logs record by ID" doc:id="a93f5643-0209-4a6d-96c9-9e8d7081cf29" config-ref="lims-db-config">
+			<db:sql >select * from history_logs where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7db36c37-155a-430d-931f-ed27bb2a4b7e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of history_log record by Id" doc:id="ad88c232-8004-4bd9-a541-18768f1ff118" message="#[payload]"/>
+	</flow>
+	<flow name="del-history_log-ById" doc:id="90e27a96-34d9-4cb0-b62d-b00787baed22" >
+		<db:delete doc:name="Delete history_logs record by ID" doc:id="3c894f17-9d3c-4c61-bb92-fd611d4f5003" config-ref="lims-db-config">
+			<db:sql >delete from history_logs where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="b3e7d07f-4c74-4e75-9d5d-402672d96879" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	'message':"history_log data deleted based on Id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted history_log record by Id" doc:id="6e5dd727-5a2e-422d-8961-d917d9ee41ee" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_inventory" doc:id="f6cea9ad-fdd1-4030-8439-f8018ef14943" >
+		<db:select doc:name="Get all item_inventory records" doc:id="d8fea098-a70f-438e-a5c1-9f28f8a0a660" config-ref="lims-db-config">
+			<db:sql >select * from item_inventory</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7795d91a-14f6-4f1e-9496-e483d79d4ba5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of item_inventory record" doc:id="182d06aa-e258-4f0f-9592-f6ca2ee31c85" message="#[payload]"/>
+	</flow>
+	<flow name="create-item_inventory-record" doc:id="002c8d04-0707-4eeb-bdc9-94f5fdd3e3ce" >
+		<db:insert doc:name="create new item_inventory record" doc:id="27d1a573-b12d-4d38-aed7-6ae5d716b4cb" config-ref="lims-db-config">
+			<db:sql >insert into item_inventory(id, item_id, inventory_itemstock, inventory_status, item_remarks, date_change) values (:id, :item_id, :inventory_itemstock, :inventory_status, :item_remarks, :date_change) 
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"item_id": payload.item_id, 
+	"inventory_itemstock": payload.inventory_itemstock, 
+	"inventory_status": payload.inventory_status, 
+	"item_remarks": payload.item_remarks, 
+	"date_change": payload.date_change
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="b258eaf5-1e99-4da0-abab-609454629e21" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"item_inventory data created successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of new item_inventory record" doc:id="161194c6-4ef4-46e1-9f61-202dcc33df6d" message="#[payload]"/>
+	</flow>
+	<flow name="update-item_inventory" doc:id="5ad17b97-3939-4ce1-b004-8ca699d773ba" >
+		<db:update doc:name="Update existed item_inventory record" doc:id="3941d4a9-e593-40e4-bcfd-80442d70f7b9" config-ref="lims-db-config">
+			<db:sql >update item_inventory set item_remarks=:item_remarks where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id,
+	"item_remarks": payload.item_remarks
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="285d9490-bfcb-49c4-890f-bc686c99a31f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"item_inventory record updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updated existed item_inventory record" doc:id="912eb370-79d4-404f-80cf-a19b7ed4a202" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_inventory-record" doc:id="b69b3424-709e-4474-951c-b503bff6ee43" >
+		<db:delete doc:name="Delete item_inventory record" doc:id="045c1775-913b-48db-af24-6dd20e05d422" config-ref="lims-db-config">
+			<db:sql >delete from item_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="3a8a8a65-f86c-43d7-a57e-5baf4ef82928" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "item_inventory record deleted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted item_inventory record" doc:id="a3c44ade-93a0-4ea8-b461-bddd53929fbb" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_inventory-ById" doc:id="3230eb4b-e528-4f06-87c9-d8c8d2b4ea9b" >
+		<db:select doc:name="Get item_inventory record ById" doc:id="1c96d042-cff6-4a55-9b28-b1b32d4b1854" config-ref="lims-db-config">
+			<db:sql >select * from item_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="0945bf18-8c30-4295-a0af-e129c46e394c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of item_inventory record by id" doc:id="29db759b-d3f4-40a9-94c9-991859f25e93" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_inventory-record-ById" doc:id="06126ad8-7431-4a4c-aaf2-07e53a9deb0d" >
+		<db:delete doc:name="Delete item_inventory record ById" doc:id="e4b1b340-06e9-4511-9a32-a37bb4415acd" config-ref="lims-db-config">
+			<db:sql >delete from item_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="185876ae-9318-4c0e-8de6-64d4134e8305" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "item_inventory record deleted sucessfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleted item_inventory record by id" doc:id="29d692e4-a813-49a4-ae51-8ea1945ef68d" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_stock" doc:id="9c771c59-b763-471b-8349-a01ce7ea1f32" >
+		<db:select doc:name="get All item_stock records" doc:id="71b8b892-60d7-4e6f-9816-bea235d73cb0" config-ref="lims-db-config">
+			<db:sql >select * from item_stock</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="44cb0447-662c-4ce0-bf37-061519a246f6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of All item_stock records" doc:id="988d4a57-b563-4eda-9aa8-f683aa1e4951" message="#[payload]"/>
+	</flow>
+	<flow name="Create-item_stock" doc:id="a542e488-e2ed-4619-b8b4-4feb0e5e98c2" >
+		<db:insert doc:name="create new item_stock record" doc:id="5f8c6276-1574-4c40-9d25-597512215e9d" config-ref="lims-db-config">
+			<db:sql >insert into item_stock (id, item_id, room_id, items_stock, item_status, status) values (:id, :item_id, :room_id, :items_stock, :item_status, :status)
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id":payload.id,
+	 "item_id":payload.item_id, 
+	 "room_id":payload.room_id, 
+	 "items_stock":payload.items_stock, 
+	 "item_status":payload.item_status, 
+	 "status":payload.status
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="400fef6a-ea84-4153-a486-c61432e68e72" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating new record in item_stock" doc:id="ae7b5658-a189-4ba0-baac-744861ac22f8" message="#[payload]"/>
+	</flow>
+	<flow name="update-item_stock" doc:id="cd04c701-f3c3-4cd9-9d07-468f4828d652" >
+		<db:update doc:name="Update existed record from item_stock" doc:id="354ad31e-a502-4d9a-9b1b-ea5c40e8b6fd" config-ref="lims-db-config">
+			<db:sql >update item_stock set status=:status where item_id=:item_id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	status:payload.status,
+	item_id:attributes.queryParams.item_id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="e3ccee16-e75f-4bca-9023-e36eca3dde5b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "one record in item_stock is updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating existed record in item_stock" doc:id="79dc17e3-9b89-4f32-a619-f1d0adbdc2d6" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_stock" doc:id="08ad72e5-679c-4f07-a06d-52a29deb29c8" >
+		<db:delete doc:name="Delete existed record from item_stock" doc:id="3ab6bd6a-a97e-4287-bb4a-2aa00e46ac6e" config-ref="lims-db-config">
+			<db:sql >delete from item_stock where item_id=:item_id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	item_id:attributes.queryParams.item_id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="cfd03668-156a-4e46-8893-90becf75f120" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"message":"one row record is deleted successfully from item_stock"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting  a record from item_stock" doc:id="605b440c-f8f1-4c4b-8665-d1f56dbcddb2" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_stock-ById" doc:id="63dc3b2a-89a5-4b56-8819-f0d239a3989c" >
+		<db:delete doc:name="Delete a record from item_stock based on Id" doc:id="ac2063ce-4c11-477e-af10-92d9d854b199" config-ref="lims-db-config">
+			<db:sql >delete from item_stock where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="a2e7f682-61a7-4805-906e-2f7fe1c530d7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/java
+---
+{
+	"message":"one item is deleted based from item_stock based on Id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting a record from item_stock based on Id" doc:id="71403254-0318-434d-aefd-97691ce31b01" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_stock-ById" doc:id="d7945333-18ef-4bc2-b56b-c09ca6d78315" >
+		<db:select doc:name="Get item_stock record based on Id" doc:id="7eadd28a-f027-435f-ad66-33ae911e434f" config-ref="lims-db-config">
+			<db:sql >select * from item_stock where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a18b5018-c853-4a7c-baf1-21bd46d71d30" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of item_stock record based on Id" doc:id="7190cbfd-bc82-45c1-be7e-9ac94a93842e" message="#[payload]"/>
+	</flow>
+	<flow name="Get-member" doc:id="32e44dc6-66f7-4aab-ba18-0675c8fd6f39" >
+		<db:select doc:name="Get All member records from DB" doc:id="192727ac-8fb2-45d8-a0e2-46a65dcf427a" config-ref="lims-db-config">
+			<db:sql >select * from users.member</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="3a85792a-5e97-45e8-9f05-af6c70e01993" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of All member records " doc:id="10fa9858-10ab-42f8-bf86-e0edbf8bdd9e" message="#[payload]"/>
+	</flow>
+	<flow name="Create-member" doc:id="b0cbf75e-a1cd-4b73-a571-059883198148" >
+		<db:insert doc:name="Create new member record into DB" doc:id="f6d0fee2-751c-4a0e-a37e-49ecb6f052fb" config-ref="lims-db-config">
+			<db:sql >insert into users.member (id, m_school_id, m_fname, m_lname, m_gender, m_contact, m_department, m_year_section, m_type, m_password, m_status) values
+ (:id, :m_school_id, :m_fname, :m_lname, :m_gender, :m_contact, :m_department, :m_year_section, :m_type, :m_password, :m_status)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id":payload.id, 
+	"m_school_id":payload.m_school_id, 
+	"m_fname":payload.m_fname, 
+	"m_lname":payload.m_lname, 
+	"m_gender":payload.m_gender, 
+	"m_contact":payload.m_contact, 
+	"m_department":payload.m_department, 
+	"m_year_section":payload.m_year_section, 
+	"m_type":payload.m_type, 
+	"m_password":payload.m_password, 
+	"m_status":payload.m_status
+	}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="c770994f-a78f-40a4-9416-b0d89579562d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"member record inserted successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Logger" doc:id="f9ca5482-3a36-4b74-a79a-a057531f53cf" message="#[payload]"/>
+	</flow>
+	<flow name="update-member" doc:id="0bf879ce-15ac-4fb1-903d-31085c937f24" >
+		<db:update doc:name="Update existed member record in DB" doc:id="d52407a5-e517-4c8e-a765-bcb0de0bfb5f" config-ref="lims-db-config">
+			<db:sql >update users.member set  m_year_section=:m_year_section where m_department =:m_department</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	m_year_section:payload.m_year_section,
+	m_department:attributes.queryParams.m_department
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="0bf2cbbf-96db-49c2-b4af-20c1a40abb36" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"member record has been updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of member record updating" doc:id="f78edea5-7e5a-4ad1-bd24-25f1c63be546" message="#[payload]"/>
+	</flow>
+	<flow name="del-member" doc:id="857774bc-c6c5-4c84-9d1e-fe3fe9697c81" >
+		<db:delete doc:name="Delete existed member record in DB" doc:id="6374dd3d-8c71-4dd2-b012-3c786878317d" config-ref="lims-db-config">
+			<db:sql >delete from users.member where m_department=:m_department</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	m_department:attributes.queryParams.m_department
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="9d57d0e5-9121-4459-b72b-eb120bc339eb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:'member record has been deleted successfully'
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of member record deleting" doc:id="827be0ec-3d0d-4828-b10f-1b640d432cc3" message="#[payload]"/>
+	</flow>
+	<flow name="del-member-ById" doc:id="9623d6bf-0986-496b-9fc0-da56732d3622" >
+		<db:delete doc:name="Delete member record from DB" doc:id="0ab30291-3b7c-432e-abe6-eb6b2bc2bebc" config-ref="lims-db-config">
+			<db:sql >delete from users.member where m_fname=:m_fname</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	m_fname:attributes.uriParams.m_fname
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="3d73eee6-946e-4ae1-a6bd-c6dddca81b8d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	message:"member record deleted based on Id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting member record based on Id" doc:id="10505660-3603-4d6d-b085-01de2c5615b5" message="#[payload]"/>
+	</flow>
+	<flow name="Get-member-ById" doc:id="f1345fe8-bfe7-42b3-9e73-57afc706c2d6" >
+		<db:select doc:name="Get member record ById from DB" doc:id="9d4f3a1f-ad50-4805-b3bc-15304fcfb9b4" config-ref="lims-db-config">
+			<db:sql >select * from users.member where m_fname=:m_fname</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	m_fname:attributes.uriParams.m_fname
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="03907cec-d2b8-4aa5-92cb-9e90f4023460" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching member record based on Id" doc:id="b60797ef-81af-4c3b-8942-5e02633c5f42" message="#[payload]"/>
+	</flow>
+	<flow name="Get-reservation_status" doc:id="5ec0d77f-b53a-4db2-b974-b73179d1a067" >
+		<db:select doc:name="Get All records of reservation_status" doc:id="2e8d4aaa-4e1a-4793-945d-28919dadcefe" config-ref="lims-db-config">
+			<db:sql >select * from users.reservation_status</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="b66cc705-d4fa-4d9c-a8b3-c6ad3cb6bcfc" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching All records of Reservation_status" doc:id="a609743b-7608-4f5b-8190-f4aff4159745" message="#[payload]"/>
+	</flow>
+	<flow name="Create-reservation_status" doc:id="39d8750e-5b2b-454d-a375-32883ddd13e4" >
+		<db:insert doc:name="Creating a new record of reservation_status in DB" doc:id="246a42cd-c1f8-4f0d-a267-42d62e149240" config-ref="lims-db-config">
+			<db:sql >insert into reservation_status (id, reservation_code, remark, res_status) values (:id, :reservation_code, :remark, :res_status)
+</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+"id":payload.id, 
+"reservation_code":payload.reservation_code, 
+"remark":payload.remark, 
+"res_status":payload.res_status
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="3c1fb540-5791-4323-93dd-7c806b7c89b5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	'message':"new record of reservation status is created"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of Creating a new record of Reservation_status" doc:id="21052fab-8408-4357-86d9-6a74fcbc2a38" message="#[payload]"/>
+	</flow>
+	<flow name="update-reservation_status" doc:id="1caddd5e-86d4-4e09-bcaf-79b928488579" >
+		<db:update doc:name="Update a record od reservation_status in DB" doc:id="b8570b64-a205-4091-b688-4c3cb7ab6d09" config-ref="lims-db-config">
+			<db:sql >update reservation_status set id=:id where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	reservation_code:attributes.queryParams.reservation_code,
+	id:payload.id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="7af63f73-0ce6-44c3-96c0-3c7be500e3e1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"one record of reservation_status is updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating existed record of reservation_status" doc:id="0013e465-8260-4923-a71a-d8bed1eee5af" message="#[payload]"/>
+	</flow>
+	<flow name="del-reservation_status" doc:id="6821f49e-a2ad-4133-a82d-b41b338ce402" >
+		<db:delete doc:name="Delete a record of reservation_status from DB" doc:id="cfb0eda0-6582-4c12-8ae0-0ea27f23b41c" config-ref="lims-db-config">
+			<db:sql >delete from users.reservation_status where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	reservation_code:attributes.queryParams.reservation_code
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="050e45c9-a7d3-4d66-a6bf-b163b41919be" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	'message':
+	"one record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting record of reservation_status from DB" doc:id="ef81b7b5-3bdb-4533-8f5c-65e6f56523de" message="#[payload]"/>
+	</flow>
+	<flow name="Get-reservation_statusBy-reservation_code" doc:id="383699a9-54eb-4d3a-bfa0-e0213bc066d8" >
+		<db:select doc:name="fetch a reservation_status record based on reservation_code" doc:id="839e721b-12ad-451b-8edf-72e02f8ff43f" config-ref="lims-db-config">
+			<db:sql >select * from users.reservation_status where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	reservation_code:attributes.uriParams.reservation_code
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="137269ff-f0ad-4f1e-a96a-ff6b354dc2f7" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching a record of reservation_status based on Id" doc:id="a06dbc66-4add-4b04-ac89-b8cade393300" message="#[payload]"/>
+	</flow>
+	<flow name="del-reservation_status-By-reservation_code" doc:id="d37391cb-39a4-4bbc-bebc-c2fbaa72f8a6" >
+		<db:delete doc:name="Delete a record based on Id" doc:id="c5d55f1c-2fc9-4136-a048-1543765b4e5a" config-ref="lims-db-config">
+			<db:sql >delete from reservation_status where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="22a9e738-952e-4612-b034-47875cd37ed3" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"reservation_status record deleted based on id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting a record of resrvation_status based on reservation_code" doc:id="d0ee883e-e7bd-496b-babf-4fd3138adb20" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_transfer" doc:id="841bf1cb-24d3-4aa4-a22c-4482c24c2587" >
+		<db:select doc:name="Get all item_transfer records from db" doc:id="c9e40b91-87be-4d43-b304-aa7578634562" config-ref="lims-db-config">
+			<db:sql >select * from item_transfer</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="15eb7c79-7b12-4e27-aebf-509334a21519" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching all records of item_transfer" doc:id="ef153302-d63c-46b1-8ad6-5e63b0d0e3b4" message="#[payload]"/>
+	</flow>
+	<flow name="create-item_transfer" doc:id="806f76a1-42c7-45b4-9894-59ebf2cde173" >
+		<db:insert doc:name="Creating a new record into item_transfer" doc:id="56102e13-72a1-45d5-84f4-6fe490a55724" config-ref="lims-db-config">
+			<db:sql >insert into item_transfer(id, t_itemID, t_roomID, t_stockID, t_quantity, date_transfer, t_status, personincharge, userid) values(:id, :t_itemID, :t_roomID, :t_stockID, :t_quantity, :date_transfer, :t_status, :personincharge, :userid)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"t_itemID": payload.t_itemID, 
+	"t_roomID": payload.t_roomID, 
+	"t_stockID": payload.t_stockID, 
+	"t_quantity": payload.t_quantity,
+	"date_transfer": payload.date_transfer, 
+	"t_status": payload.t_status, 
+	"personincharge": payload.personincharge, 
+	"userid": payload.userid
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="3a8444da-41c5-41c3-a03b-50399a15d81e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"new record created in item_transfer"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating a new record of item_transfer" doc:id="830f6239-a6c5-483c-9ee2-c5a54875682f" message="#[payload]"/>
+	</flow>
+	<flow name="update-item_transfer" doc:id="7c04e964-3c8a-4812-907e-c705947346f7" >
+		<db:update doc:name="Updating a record of item_transfer in db" doc:id="f0623a98-4d19-417d-a479-b99f8cd3c789" config-ref="lims-db-config">
+			<db:sql >update item_transfer set personincharge=:personincharge where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id,
+	"personincharge": payload.personincharge
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="2d5822a8-a03b-4e7f-b9bf-225f5c01ba0d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "updated an item_transfer record based on id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating a record of item_transfer" doc:id="0af6f5bd-ea12-419f-93bf-887f0343b61a" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_transfer" doc:id="0dd91691-7143-4859-96c6-5e5074f106d7" >
+		<db:delete doc:name="Deleting a record of item_transfer from db" doc:id="4dbc229e-04c5-44ca-a507-a40da1140885" config-ref="lims-db-config">
+			<db:sql >delete from item_transfer where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="df433912-a4e2-4a8a-b458-96c9bbff24d0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "deleted an item_transfer record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting a record of item_transfer" doc:id="079a88d9-aaa6-4a02-a924-c88a59081cfc" message="#[payload]"/>
+	</flow>
+	<flow name="get-item_transfer-ById" doc:id="852f9571-9f1c-4d66-bd37-a96b489b0e72" >
+		<db:select doc:name="Get item_transfer record By Id from db" doc:id="afe2f53f-7015-46fd-947a-91540e4c221e" config-ref="lims-db-config">
+			<db:sql >select * from item_transfer where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="ff7fd5f6-d821-4888-828d-09fa78bd2352" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching a record of item_transfer based on Id" doc:id="d930d314-ac4a-4b36-b9a6-a6c1202c12b8" message="#[payload]"/>
+	</flow>
+	<flow name="del-item_transfer-ById" doc:id="7580604a-7aa5-49ec-aa5a-f98c2032ba3b" >
+		<db:delete doc:name="Delete item_transfer record By Id from db" doc:id="e0837cca-476f-4d60-98fe-e6fb5f02284f" config-ref="lims-db-config">
+			<db:sql >delete from item_transfer where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="7ef4bcdb-7302-439b-8dae-354b521007f4" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "deleted an item_transfer record based on id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting a record of item_transfer based on Id" doc:id="348e5477-569c-4ad7-9d98-423fd954061b" message="#[payload]"/>
+	</flow>
+	<flow name="get-reservation" doc:id="0c0b2ce4-556d-45db-95e8-1b411a9791f7" >
+		<db:select doc:name="Get all reservation records from db" doc:id="8b272a33-fa09-4060-a610-0181908168db" config-ref="lims-db-config">
+			<db:sql >select * from reservation</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="803c1304-0c46-4080-8bd9-4a1fbfd8afbd" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting all records of reservation" doc:id="9085725f-f9b7-493c-8d74-e77432268e6c" message="#[payload]"/>
+	</flow>
+	<flow name="create-reservation" doc:id="75e55b1e-0f46-48ac-bc00-00cb85d925f2" >
+		<db:insert doc:name="Create a new reservation record in db" doc:id="785bdbc2-c61c-4ef3-b51c-c6fc6a8d954e" config-ref="lims-db-config">
+			<db:sql >insert into reservation(id, reservation_code, member_id, item_id, stock_id, room_id, reserve_date, reservation_time, time_limit, assign_room, status, remarks, r_date) values(:id, :reservation_code, :member_id, :item_id, :stock_id, :room_id, :reserve_date, :reservation_time, :time_limit, :assign_room, :status, :remarks, :r_date)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"reservation_code": payload.reservation_code, 
+	"member_id": payload.member_id, 
+	"item_id": payload.item_id,
+	"stock_id": payload.stock_id, 
+	"room_id": payload.room_id, 
+	"reserve_date": payload.reserve_date, 
+	"reservation_time": payload.reservation_time, 
+	"time_limit": payload.time_limit, 
+	"assign_room": payload.assign_room, 
+	"status": payload.status, 
+	"remarks": payload.remarks, 
+	"r_date":payload.r_date
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="fd57e045-ec02-4e16-a5cd-0453bb5a46fa" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"created a new reservation record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating new record of reservation" doc:id="a8034fab-6cbe-4c28-9d8a-1260b3f68cc3" message="#[payload]"/>
+	</flow>
+	<flow name="update-reservation" doc:id="a4db7481-a4ec-40ae-b9f6-162382ced6fe" >
+		<db:update doc:name="Update existed record in reservation" doc:id="b365c79e-ffd6-4472-9b65-d66f0673c4e5" config-ref="lims-db-config">
+			<db:sql >update reservation set assign_room=:assign_room  where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	id:attributes.queryParams.id,
+	assign_room:payload.assign_room
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="1283f46d-5a62-4647-b3b5-943b9b688861" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"reservation record updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating new record of reservation" doc:id="9bbea7b4-2ef7-4ec9-8842-09b8083c4cc5" message="#[payload]"/>
+	</flow>
+	<flow name="del-reservation" doc:id="09728bec-23d6-4baf-ab00-034230e044dc" >
+		<db:delete doc:name="Delete reservation record based on Id" doc:id="00e74cf8-0807-4236-81fd-47a10285596d" config-ref="lims-db-config">
+			<db:sql >delete from reservation where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+		id:attributes.queryParams.id
+	
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="a27e2bea-9ac7-4a16-949d-b68d859c83da" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"reservation record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting  record of reservation" doc:id="8b18901b-e814-480c-a2fa-bcfe2d1fcbce" message="#[payload]"/>
+	</flow>
+	<flow name="get-reservation-By-reservation_code" doc:id="e7308de3-a2d4-434f-aafe-796f65fe06a3" >
+		<db:select doc:name="Get reservation record based on reservation_code" doc:id="0e4ed95a-6645-49d8-9d80-4f6f9cf84a19" config-ref="lims-db-config">
+			<db:sql >select * from reservation where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"reservation_code": attributes.uriParams.reservation_code
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="3a3b0fe9-0cd6-40a4-8fe4-3edd2e0a7a3c" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting  record of reservation based on reservation_code" doc:id="44c2eea1-01e9-48b9-bdfe-3fc091c88d81" message="#[payload]"/>
+	</flow>
+	<flow name="del-reservation-By-reservation_code" doc:id="94e09a7f-3da3-4c6b-96f0-ffbe70f77b5a" >
+		<db:delete doc:name="Delete reservation record based on reservation_code" doc:id="4c7859d7-3fae-4543-bf95-c0caa3d20d5f" config-ref="lims-db-config">
+			<db:sql >delete from reservation where reservation_code=:reservation_code</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"reservation_code": attributes.uriParams.reservation_code
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="00ba7717-8ce8-4e5c-b1c2-bf4706948eb0" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"reservation record deleted based on reservation_code"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting  record of reservation based on reservation_code" doc:id="1b5ab8b8-068e-4e0c-b54a-56c10065ccf9" message="#[payload]"/>
+	</flow>
+	<flow name="get-room" doc:id="816f4ac7-6b01-4e0f-b544-3bd1cbbd23b3" >
+		<db:select doc:name="Get all room records from db" doc:id="bb592638-5ff0-427f-a61b-8f6e3cf9a841" config-ref="lims-db-config">
+			<db:sql >select * from room</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a8c4fb9e-fd6b-4fc0-a86c-7e93569d1bf5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting all records of room" doc:id="6208c0c7-1ca2-4bbb-802b-cbba16218b4d" message="#[payload]"/>
+	</flow>
+	<flow name="create-room" doc:id="0a35adbd-9fd9-43e5-ac0a-95f24505a1d7" >
+		<db:insert doc:name="Create a new room record in db" doc:id="e1d031ed-503f-4c54-8cf5-8c39a66190f6" config-ref="lims-db-config">
+			<db:sql >insert into room(id, rm_name, rm_date_added, rm_status) values(:id, :rm_name, :rm_date_added, :rm_status)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"rm_name": payload.rm_name, 
+	"rm_date_added": payload.rm_date_added, 
+	"rm_status": payload.rm_status
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="9c3ffc80-89d9-4361-b30a-9f966301267e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"created a new room record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating a new record of room" doc:id="4016a1bc-5cd4-4b78-956f-5cec1f1c6137" message="#[payload]"/>
+	</flow>
+	<flow name="update-room" doc:id="34b88355-ff5c-4c21-a568-28d918354745" >
+		<db:update doc:name="Update existed room record" doc:id="a5ef2d43-c24d-4dee-aafc-c902262617ba" config-ref="lims-db-config">
+			<db:sql >update room set rm_name=:rm_name where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id,
+	"rm_name": payload.rm_name
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="bd556ed6-76d4-44dc-8f2e-dc6836340d4d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"room record updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating  record of room" doc:id="b22c5a04-141d-4bad-98e1-c3f340452b73" message="#[payload]"/>
+	</flow>
+	<flow name="del-room" doc:id="ac37e682-e419-4517-9bca-2b4dc9d94c0c" >
+		<db:delete doc:name="Delete room record" doc:id="12ad0a9a-9465-41c3-b204-1d75984f145e" config-ref="lims-db-config">
+			<db:sql >delete from room where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="67cf2f49-407a-48e8-abbc-fbc5d36357c1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"room record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting  record of room" doc:id="9a163238-392d-4696-95af-4f93eb22d402" message="#[payload]"/>
+	</flow>
+	<flow name="get-room-By-rm_name" doc:id="96f51326-5f3f-40f4-9d77-aa3fce3285da" >
+		<db:select doc:name="Get room based on Id from db" doc:id="ac527630-f04a-4caf-b35a-327379784cf7" config-ref="lims-db-config">
+			<db:sql >select * from room where rm_name=:rm_name</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"rm_name": attributes.uriParams.rm_name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="4e17fde6-f14b-4e98-a460-288f6434c59e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting all records of room based on rm_name" doc:id="d8aff0d4-5d9e-405c-b413-0baa7fe58eb9" message="#[payload]"/>
+	</flow>
+	<flow name="del-room-by-rm_name" doc:id="d09fa078-dfd9-42c3-890e-5d87a8d89340" >
+		<db:delete doc:name="Delete room record based on id from db" doc:id="aead0ae6-29d2-4ec7-bb38-6150a7ae5f53" config-ref="lims-db-config">
+			<db:sql >delete from room where rm_name=:rm_name</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"rm_name": attributes.uriParams.rm_name
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="4e2984ff-4865-407b-ae93-72c68b8b30f6" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"room record deleted based on rm_name"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting  record of room based on rm_name" doc:id="00e26d4e-0357-4536-a286-116f2dc8aac8" message="#[payload]"/>
+	</flow>
+	<flow name="get-room_equipment" doc:id="5d12a0b2-c568-4ac0-a3f5-f1b182f9a748" >
+		<db:select doc:name="Get all room_equipment records from db" doc:id="aadf6db0-c7a6-4415-8a77-31c4bbdf2507" config-ref="lims-db-config">
+			<db:sql >select * from room_equipment</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="191389f3-bc68-4fe5-9aaa-15c4938d7f6e" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting all records of room_equipment" doc:id="81db5f8f-ae53-4d46-a6e2-0a01f00a400f" message="#[payload]"/>
+	</flow>
+	<flow name="create-room_equipment" doc:id="3303d90a-afe5-4c08-95da-8e39f47b72ef" >
+		<db:insert doc:name="Create a new record of room_equipment in db" doc:id="0e0b6c3e-f4b9-4e1c-84aa-e3a03d26e3bf" config-ref="lims-db-config">
+			<db:sql >insert into room_equipment(id, equipment_id, room_id, re_quantity, status) values(:id, :equipment_id, :room_id, :re_quantity, :status)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"equipment_id": payload.equipment_id, 
+	"room_id": payload.room_id, 
+	"re_quantity": payload.re_quantity, 
+	"status": payload.status
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="0f03fa4f-0d7a-4926-adbb-7929ea97feca" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"created a new record of item_equipment"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating record of room_equipment" doc:id="0b18c999-d338-4b3c-a0b0-f3800c1b37e4" message="#[payload]"/>
+	</flow>
+	<flow name="update-room_equipment" doc:id="3f9ed10b-1999-4c82-909b-9d3dc556face" >
+		<db:update doc:name="Update an existed record of room_equipment" doc:id="7f408462-581a-4463-abe3-2c6dfe124d1d" config-ref="lims-db-config">
+			<db:sql >update room_equipment set room_id=:room_id where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id,
+	"room_id": payload.room_id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="0ecaa853-3613-4abb-b0c6-bb1539187f3d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"updated existed record of room_equipment"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating record of room_equipment" doc:id="b37a7616-dbf6-4b87-bdb6-4fa1cf21dcc5" message="#[payload]"/>
+	</flow>
+	<flow name="del-room_equipment" doc:id="8f525b03-a9f7-4d61-8224-130a6efd18da" >
+		<db:delete doc:name="Delete record of room_equipment" doc:id="bdd99739-2a3d-456e-9ee4-648ca882d2f8" config-ref="lims-db-config">
+			<db:sql >delete from room_equipment where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="a8f1c499-2752-4d26-af1a-cea130f143e9" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"deleted record of room_equipment"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting record of room_equipment" doc:id="6c2ee657-f5d3-4284-8e01-0c8c658ad7e3" message="#[payload]"/>
+	</flow>
+	<flow name="get-room_equipment-ById" doc:id="53334bee-d9df-40d2-b333-0913fdf62a97" >
+		<db:select doc:name="Get room_equipment record by id" doc:id="184c28ef-50ab-44b4-8d16-b4b30bf0b2d7" config-ref="lims-db-config">
+			<db:sql >select * from room_equipment where equipment_id=:equipment_id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"equipment_id": attributes.uriParams.equipment_id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="7dfb4aaf-85f0-4330-84d8-ac23793404bb" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting  record of room_equipment based on id" doc:id="b4d9b881-cfd5-4e4b-9156-6ff725b9676b" message="#[payload]"/>
+	</flow>
+	<flow name="del-room_equipment-ById" doc:id="42dd5c76-35a3-492d-8a33-ad23dec9e8cc" >
+		<db:delete doc:name="Delete room_equipment record by id" doc:id="9b79db57-cf58-47bf-bc58-215c1d866f55" config-ref="lims-db-config">
+			<db:sql >delete from room_equipment where equipment_id=:equipment_id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"equipment_id": attributes.uriParams.equipment_id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="676e93e2-b519-4c6d-9673-23de84615f2b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"deleted record of room_equipment by id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting record of room_equipment by id" doc:id="437e50d9-a7eb-4985-9e54-3119da2bea3d" message="#[payload]"/>
+	</flow>
+	<flow name="get-user" doc:id="053f1493-abc7-44fd-a7fe-a823ba53ba7c" >
+		<db:select doc:name="Get all user records from db" doc:id="c3ef1f9a-7738-43e0-9a66-0bbbbe20f34e" config-ref="lims-db-config">
+			<db:sql >select * from user</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="6f42746c-2cdd-47aa-9767-e465a6907117" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting all records of user" doc:id="53988ea7-4133-4686-af0d-deaeb962ff6a" message="#[payload]"/>
+	</flow>
+	<flow name="create-user" doc:id="d1ea4e31-03bd-4047-9c91-bb7dd7193810" >
+		<db:insert doc:name="Create a new record of user in db" doc:id="32609457-7851-418f-b66a-912ed828e564" config-ref="lims-db-config">
+			<db:sql >insert into user(id, name, username, password, typer, status) values(:id, :name, :username, :password, :typer, :status)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": payload.id, 
+	"name": payload.name, 
+	"username":payload.username, 
+	"password": payload.password, 
+	"typer": payload.typer, 
+	"status": payload.status
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="a1de7cc0-ac64-402f-b5e8-0d37c321fcef" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"created new user record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating new record of user" doc:id="a8515834-1ef6-47e9-98f2-7c2d9dcc2a25" message="#[payload]"/>
+	</flow>
+	<flow name="update-user" doc:id="07781dde-3ff1-483c-9dfb-ad3d15870b98" >
+		<db:update doc:name="Update existed user record in db" doc:id="a31698a4-bf97-4528-a12a-5b8dfcb68235" config-ref="lims-db-config">
+			<db:sql >update user set username=:username where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id,
+	"username": payload.username
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="4cb96e4c-d421-4174-a09f-087caffcc454" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"updated user record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating a record of user" doc:id="7c281606-b41a-45a2-b6a3-b4e238ba9cbc" message="#[payload]"/>
+	</flow>
+	<flow name="del-user" doc:id="6aa0f46a-7a81-4ffc-b37a-4feaa6cbbc2b" >
+		<db:delete doc:name="Delete user record from db" doc:id="72801b03-9170-48dc-a359-5ec2250fd369" config-ref="lims-db-config">
+			<db:sql >delete from user where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="81649dc5-8d55-4e8b-98bd-a9ea22ca9862" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"deleted user record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting record of user" doc:id="7df4a14a-4ac5-42b7-912c-3396e80b41ac" message="#[payload]"/>
+	</flow>
+	<flow name="get-user-By-name" doc:id="a1776e72-cc0c-415f-9e9d-10d3700e365c" >
+		<db:select doc:name="Get user record from db based on name" doc:id="33f27a08-c327-442d-8e76-dd5068e15a68" config-ref="lims-db-config">
+			<db:sql >select * from user where name=:name</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"name": attributes.uriParams.name
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="3024e753-b500-44bb-bb86-478eb8deb2b5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting record of user based on name" doc:id="855273fc-d750-427a-907a-bf59df51ab7c" message="#[payload]"/>
+	</flow>
+	<flow name="del-user-By-name" doc:id="660b6966-e0e4-4050-883a-95f474be59a5" >
+		<db:delete doc:name="Delete user record from db based on name" doc:id="af04f1aa-16a1-4da9-ae90-bdf2bd09b5af" config-ref="lims-db-config">
+			<db:sql > delete from user where name=:name</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"name": attributes.uriParams.name
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="8feaf28a-125f-4fe1-b96c-463075188fa8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message":"deleted user record based on id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting record of user based on name" doc:id="c95ff331-d96a-4057-af49-bdf71e307ae0" message="#[payload]"/>
+	</flow>
+	<flow name="create-equipment" doc:id="15bcf997-c13a-4b30-9b20-1d31d2a42a02" >
+		<db:insert doc:name="Create new equipment record" doc:id="ffbe39b6-07c2-4a98-8df9-4abbb432a4da" config-ref="lims-db-config">
+			<db:sql >insert into equipment(e_deviceid, e_model, e_category, e_brand, e_description, e_stock, e_stockleft, e_type, e_status, room_id) values(:e_deviceid, :e_model, :e_category, :e_brand, :e_description, :e_stock, :e_stockleft, :e_type, :e_status, :room_id)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"e_deviceid": payload.e_deviceid, 
+	"e_model": payload.e_model, 
+	"e_category": payload.e_category, 
+	"e_brand": payload.e_brand, 
+	"e_description": payload.e_description, 
+	"e_stock": payload.e_stock, 
+	"e_stockleft": payload.e_stockleft, 
+	"e_type": payload.e_type, 
+	"e_status": payload.e_status, 
+	"room_id": payload.room_id
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="18591f11-7d6c-4869-b900-bdaef1c83b91" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "created new equipment record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating equipment record " doc:id="29bd8417-3733-4a33-9234-184589f80f2a" message="#[payload]"/>
+	</flow>
+	<flow name="get-equipment" doc:id="f7e56c90-90a4-4e72-a119-d0285768b4f0" >
+		<db:select doc:name="Get all equipment records from db" doc:id="0889524e-b8fb-4c1e-bfa3-60251f1aa1eb" config-ref="lims-db-config">
+			<db:sql >select * from equipment</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="c8c88296-20f9-4195-a28a-0ab913f6f054" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching all equipment records " doc:id="f277aa97-dfb6-4a96-b1df-506ae25b7466" message="#[payload]"/>
+	</flow>
+	<flow name="update-equipment" doc:id="30638d97-e1f1-43f5-992b-53c06f0d4946" >
+		<db:update doc:name="Update existing equipment record" doc:id="251613d0-30df-497d-a460-4fd2ec362dc6" config-ref="lims-db-config">
+			<db:sql >update equipment set e_model=:e_model where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"e_model": payload.e_model,
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="1ee709b3-7a3d-4d0a-b9cc-bf378fc772d1" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "equipment record updated"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating equipment record " doc:id="11fb6bf4-9f83-486f-94b6-c40cff563b45" message="#[payload]"/>
+	</flow>
+	<flow name="del-equipment" doc:id="28b1a8c6-0836-4a5f-a6f4-5d50de9324a2" >
+		<db:delete doc:name="Delete equipment from db" doc:id="d4116035-c01d-44e7-afe9-4fef42f6f442" config-ref="lims-db-config">
+			<db:sql >delete from equipment where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="97353ce3-8a7a-423c-bdd8-8cd07588421d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "equipment record deleted"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting equipment record " doc:id="652fcfdd-a758-4f58-9f2a-9416ecd0bb75" message="#[payload]"/>
+	</flow>
+	<flow name="get-equipment-By-id" doc:id="bc60f16b-a038-421c-87de-f78090e94579" >
+		<db:select doc:name="Get equipment record by id" doc:id="a1466170-0fd7-4d1a-8d8a-e96ee4f26284" config-ref="lims-db-config">
+			<db:sql >select * from equipment where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="a171d68f-ffa3-42d6-91f6-e11b226bc485" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of getting equipment record by id" doc:id="c8b4e079-2950-469b-9c0b-029e390d92ff" message="#[payload]"/>
+	</flow>
+	<flow name="del-equipment-By-id" doc:id="9c5d0606-515b-463c-81d5-3c52a35abd82" >
+		<db:delete doc:name="Delete equipment record by id" doc:id="9ecf2eb4-b471-405e-aa8f-bb057dd392a7" config-ref="lims-db-config">
+			<db:sql >delete from equipment where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="22d6602f-b31a-494f-bc0d-6e632e64e947" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "deleted equipmetn record by id"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting equipment record by id" doc:id="d94f9f82-3640-47f3-96f1-80cad9de1f71" message="#[payload]"/>
+	</flow>
+	<flow name="create-equipment_inventory" doc:id="251576a3-5b24-4dd4-a6c3-dc52383f77c6" >
+		<db:insert doc:name="Create new equipment_inventory record" doc:id="6701b436-e791-4728-b5ba-2e2ed1cbc187" config-ref="lims-db-config">
+			<db:sql >insert into equipment_inventory(equipment_id, qty, remarks, status) values(:equipment_id, :qty, :remarks, :status)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"equipment_id": payload.equipment_id, 
+	"qty": payload.qty, 
+	"remarks": payload.remarks, 
+	"status": payload.status	
+}]]]></db:input-parameters>
+		</db:insert>
+		<ee:transform doc:name="Transform Message" doc:id="df5e0aff-691b-4a2d-8466-ecd172d1cd8b" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "new equipment_inventory record created"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of creating equipment_inventory record " doc:id="1a2540e4-4c2e-4e21-8674-897003c98a5e" message="#[payload]"/>
+	</flow>
+	<flow name="get-equipment_inventory" doc:id="f976e5c9-0d17-4e7a-a6d3-d9dd02a6acc5" >
+		<db:select doc:name="Get all equipment_inventory records" doc:id="ded61161-b6bf-438c-b105-420b571a96c1" config-ref="lims-db-config">
+			<db:sql >select * from equipment_inventory</db:sql>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="b037c4a1-98ea-4afe-af30-5d3094d68924" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching all equipment_inventory records " doc:id="559a5e79-b35f-45df-ab88-a353c75229da" />
+	</flow>
+	<flow name="update-equipment_inventory" doc:id="d977912b-e202-48f0-800b-763d33bba16e" >
+		<db:update doc:name="Update equipment_inventory record" doc:id="0a9b410f-a8f1-488a-b694-a482970518bf" config-ref="lims-db-config">
+			<db:sql >update equipment_inventory set remarks=:remarks where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"remarks": payload.remarks,
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:update>
+		<ee:transform doc:name="Transform Message" doc:id="3335f1ee-d067-4f08-89ad-67cd0921ae41" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "equipment_inventory updated successfully"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of updating equipment_inventory record " doc:id="71ae020a-3672-49fb-a916-cf2bfc7c877d" />
+	</flow>
+	<flow name="del-equipment_inventory" doc:id="4a19c6c7-4669-4139-b1a0-907842dd8fe0" >
+		<db:delete doc:name="Delete equipment_inventory record" doc:id="0bb8291d-c4a9-421c-98cd-ef05404d5ef6" config-ref="lims-db-config">
+			<db:sql >delete from equipment_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.queryParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="07638749-3b06-4007-ac53-db5b4bfeffa5" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "deleted equipment_inventory record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting equipment_inventory record" doc:id="637c3673-d894-4364-8e40-435711ab35c7" />
+	</flow>
+	<flow name="get-equipment_inventory-By-id" doc:id="e0e58cef-2e03-4260-ac9c-2afb2f0505be" >
+		<db:select doc:name="Select equipment_inventory record by id" doc:id="b75b4d3c-07fd-40d5-9f82-e330c17e2c07" config-ref="lims-db-config">
+			<db:sql >select * from equipment_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:select>
+		<ee:transform doc:name="Transform Message" doc:id="63ccc8ba-369c-4a0a-aec8-26173a2dd664" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of fetching equipment_inventory record by id" doc:id="59dbed43-01fa-42ef-b453-9045debf4135" message="#[payload]"/>
+	</flow>
+	<flow name="del-equipment_inventory-By-id" doc:id="4fa354e8-b9ed-4cb5-b1de-75248f4bc107" >
+		<db:delete doc:name="Delete equipment_inventory record by id" doc:id="f021816c-56ea-4485-8bbf-83744a9b15fc" config-ref="lims-db-config">
+			<db:sql >delete from equipment_inventory where id=:id</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"id": attributes.uriParams.id
+}]]]></db:input-parameters>
+		</db:delete>
+		<ee:transform doc:name="Transform Message" doc:id="a5d564f5-eed9-48ef-a80b-483f1f0c3c7d" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"message": "deleted equipment_inventory record"
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<logger level="INFO" doc:name="Response of deleting equipment_inventory record by id" doc:id="3bb73eeb-635f-46f2-9014-8965142e43b0" message="#[payload]"/>
+	</flow>
+</mule>

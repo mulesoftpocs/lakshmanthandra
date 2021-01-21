@@ -1,0 +1,23 @@
+[
+{
+"id": 1, 
+"equipment_id": 1, 
+"room_id": 14, 
+"re_quantity": 12, 
+"status": 1
+},
+{
+"id": 2, 
+"equipment_id": 2, 
+"room_id": 14, 
+"re_quantity": 12, 
+"status": 1
+},
+{
+"id": 3, 
+"equipment_id": 3, 
+"room_id": 14, 
+"re_quantity": 12, 
+"status": 1
+}
+]

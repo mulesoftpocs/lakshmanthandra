@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="e965e036-22f6-4e24-9e38-2f66f7ad055c" >
+		<http:listener-connection host="0.0.0.0" port="${http.port}" />
+	</http:listener-config>
+	<configuration-properties doc:name="Configuration properties" doc:id="8ec3c3b7-c8e2-4314-96a7-468cd791e4d5" file="common.yaml" />
+	<configuration-properties doc:name="Configuration properties" doc:id="ebd24a4c-8d1a-4dd8-81d3-d1e4bb5d463b" file="mule.dev.yaml" />
+	<global-property doc:name="Global Property" doc:id="99040364-2e54-40bf-ad52-ed1be6c61dfc" name="mule.env" value="dev" />
+	<db:config name="lims-db-config" doc:name="Database Config" doc:id="68ed1314-7950-4773-889e-b9e31562a0ae" >
+		<db:my-sql-connection host="127.0.0.1" port="3306" user="root" password="Miracle@1" database="users" >
+			<db:connection-properties >
+				<db:connection-property key="zeroDateTimeBehavior" value="convertToNull" />
+			</db:connection-properties>
+		</db:my-sql-connection>
+	</db:config>
+</mule>

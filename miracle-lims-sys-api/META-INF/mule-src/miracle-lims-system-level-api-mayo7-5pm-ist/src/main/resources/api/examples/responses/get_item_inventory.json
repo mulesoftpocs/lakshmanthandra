@@ -1,0 +1,18 @@
+ [
+ {
+  "id": 8,
+  "item_id": 16,
+  "inventory_itemstock": 2,
+  "inventory_status": 2,
+  "item_remarks": " ",
+  "date_change": "2017-02-17 06:13:59"
+  },
+  {
+  "id": 9,
+  "item_id": 16,
+  "inventory_itemstock": 2,
+  "inventory_status": 2,
+  "item_remarks": "test",
+  "date_change": "2017-02-17 06:16:07"
+  }
+  ]

@@ -1,0 +1,11 @@
+{
+"id": 1,
+"t_itemID": 111,
+"t_roomID": 401,
+"t_stockID": 999,
+"t_quantity": 32,
+"date_transfer": "2020-05-12 04:43:01",
+"t_status": 1,
+"personincharge": "Mahesh",
+"userid": 98
+}

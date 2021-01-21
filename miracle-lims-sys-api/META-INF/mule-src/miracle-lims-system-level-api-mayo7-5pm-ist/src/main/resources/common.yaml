@@ -1,0 +1,3 @@
+#HTTP config properties
+http:
+  port: "8081"

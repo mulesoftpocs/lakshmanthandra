@@ -1,0 +1,15 @@
+{
+	"id": 1, 
+	"reservation_code": 422, 
+	"member_id": 4614, 
+	"item_id": 100, 
+	"stock_id": 122, 
+	"room_id": 401, 
+	"reserve_date": "0000:00:00 00:00:00",
+	"reservation_time": "2020:05:12 05:40:50", 
+	"time_limit": "2020:05:12 05:40:50", 
+	"assign_room": 401, 
+	"status": 1, 
+	"remarks": "No", 
+	"r_date": "2020:05:12 05:40:50"
+}

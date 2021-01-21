@@ -1,0 +1,13 @@
+{
+  "id": 15,
+  "m_school_id":"21200682",
+  "m_fname":"John", 
+  "m_lname": "Doe",
+  "m_gender": "Male",
+  "m_contact":  "9124599887",
+  "m_department": "BSIS",
+  "m_year_section": "lst-A",
+  "m_type": "Student",
+  "m_password": "",
+  "m_status": 1
+}

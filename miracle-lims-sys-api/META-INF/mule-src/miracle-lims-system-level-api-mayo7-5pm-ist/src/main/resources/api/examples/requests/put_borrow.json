@@ -1,0 +1,12 @@
+{
+  "date_borrow": "2017-02-21 11:12:17",
+  "borrowcode": "22120170412171",
+  "member_id": 100,
+  "item_id": 16,
+  "stock_id": 18,
+  "user_id": 1,
+  "room_assigned": 8,
+  "status": 69,
+  "time_limit": "0000-00-00 00:00:00",
+  "date_return": "2017-02-21 04:12:47"
+}

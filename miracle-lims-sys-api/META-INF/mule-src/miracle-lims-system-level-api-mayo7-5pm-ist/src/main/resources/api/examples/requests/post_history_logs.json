@@ -1,0 +1,9 @@
+{
+  "id":49,
+  "description":"add new equipmentSM-922, Mouse",
+  "table_name": "equipment",
+   "status_name":"",
+   "user_id": 1,
+    "user_type": 1,
+    "date_created": "2017-02-17 13:28:52"
+}

@@ -1,0 +1,6 @@
+      id:
+        required: true
+      member_id:
+        required: true
+      item_id:
+        required: true

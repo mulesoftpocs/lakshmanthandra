@@ -1,0 +1,18 @@
+[
+{
+"id": 1, 
+"name": "Administrator", 
+"username": "admin", 
+"password": "0192023a7bbd73250516f069df18b500", 
+"type": 1, 
+"status": 1
+},
+{
+"id": 2, 
+"name": "John Doe", 
+"username": "staff1", 
+"password": "de9bf5643eabf80f4a56fda3bbb84483", 
+"type": 2, 
+"status": 1
+}
+]

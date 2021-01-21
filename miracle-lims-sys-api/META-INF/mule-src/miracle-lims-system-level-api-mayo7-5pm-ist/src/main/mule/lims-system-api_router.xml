@@ -1,0 +1,375 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mule xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:apikit="http://www.mulesoft.org/schema/mule/mule-apikit" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd http://www.mulesoft.org/schema/mule/mule-apikit http://www.mulesoft.org/schema/mule/mule-apikit/current/mule-apikit.xsd  http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+    <apikit:config name="lims-system-api-config" api="lims-system-api.raml" outboundHeadersMapName="outboundHeaders" httpStatusVarName="httpStatus" />
+    <flow name="lims-system-api-main">
+        <http:listener config-ref="HTTP_Listener_config" path="/api/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:router config-ref="lims-system-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:BAD_REQUEST">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Bad request"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">400</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:METHOD_NOT_ALLOWED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Method not allowed"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">405</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_ACCEPTABLE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not acceptable"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">406</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:UNSUPPORTED_MEDIA_TYPE">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Unsupported media type"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">415</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+            <on-error-propagate type="APIKIT:NOT_IMPLEMENTED">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Not Implemented"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">501</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="lims-system-api-console">
+        <http:listener config-ref="HTTP_Listener_config" path="/console/*">
+            <http:response statusCode="#[vars.httpStatus default 200]">
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:response>
+            <http:error-response statusCode="#[vars.httpStatus default 500]">
+                <http:body>#[payload]</http:body>
+                <http:headers>#[vars.outboundHeaders default {}]</http:headers>
+            </http:error-response>
+        </http:listener>
+        <apikit:console config-ref="lims-system-api-config" />
+        <error-handler>
+            <on-error-propagate type="APIKIT:NOT_FOUND">
+                <ee:transform xsi:schemaLocation="http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+                    <ee:message>
+                        <ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{message: "Resource not found"}]]></ee:set-payload>
+                    </ee:message>
+                    <ee:variables>
+                        <ee:set-variable variableName="httpStatus">404</ee:set-variable>
+                    </ee:variables>
+                </ee:transform>
+            </on-error-propagate>
+        </error-handler>
+    </flow>
+    <flow name="put:\borrow:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-update-borrow-record" doc:id="80ce11e9-f0cb-40dd-b2e4-cf6b3c504037" name="update-borrow" />
+    </flow>
+    <flow name="put:\history_logs:lims-system-api-config">
+        <flow-ref doc:name="To-update-history_logs-record" doc:id="215c08e5-1a2c-4569-97e7-6d03fa3e5f30" name="update-history_log" />
+    </flow>
+    <flow name="put:\item:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-update-item-record" doc:id="9d12d99b-92ca-42b3-868e-394740e344bb" name="update-item" />
+    </flow>
+    <flow name="delete:\borrow:lims-system-api-config">
+        <flow-ref doc:name="To-delete-borrow-record" doc:id="6a3b17b4-a484-4eaf-b623-2cf4b7f3cbcb" name="delete-borrow" />
+    </flow>
+    <flow name="delete:\history_logs:lims-system-api-config">
+        <flow-ref doc:name="To-delete-history_logs-record" doc:id="3c48afdf-853e-4804-993d-a46454f432b6" name="delete-history_log" />
+    </flow>
+    <flow name="delete:\item:lims-system-api-config">
+        <flow-ref doc:name="To-delete-item-record" doc:id="36fc67b9-dab3-44a0-aadb-979121dd8c01" name="delete-item" />
+    </flow>
+    <flow name="get:\borrow:lims-system-api-config">
+        <flow-ref doc:name="To-get-borrow-record" doc:id="f2a68767-12df-4f13-be22-12f097fb7fc4" name="get-borrow" />
+    </flow>
+    <flow name="get:\history_logs:lims-system-api-config">
+        <flow-ref doc:name="To-get-history_logs-record" doc:id="ab59294e-bd0b-47c8-a77c-d94cec71d758" name="get-history_log" />
+    </flow>
+    <flow name="get:\item:lims-system-api-config">
+        <flow-ref doc:name="To-get-item-record" doc:id="517ea88f-038a-4079-9472-69d86dbc6be6" name="get-item" />
+    </flow>
+    <flow name="post:\borrow:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-create-borrow-record" doc:id="8b31e38e-9b21-410d-9d8d-8802326fc4d8" name="create-borrow" />
+    </flow>
+    <flow name="post:\history_logs:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-create-history_logs-record" doc:id="0a581165-cb79-4047-b005-ca52c5655d2e" name="create-history_log" />
+    </flow>
+    <flow name="post:\item:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-create-item-record" doc:id="c815e32a-b447-4d06-b617-f012ad8bb9ae" name="create-item" />
+    </flow>
+    <flow name="delete:\item_inventory:lims-system-api-config">
+        <flow-ref doc:name="To-delete-item_inventory-record" doc:id="4a03c48f-da12-4a87-aae2-7c80459c996e" name="del-item_inventory-record" />
+    </flow>
+    <flow name="delete:\item\(id):lims-system-api-config">
+        <flow-ref doc:name="To-delete-item-record-ByID" doc:id="a50bcacf-ac7e-4422-8b52-20a7dd394558" name="delete-item-ById" />
+    </flow>
+    <flow name="delete:\item_inventory\(id):lims-system-api-config">
+        <flow-ref doc:name="To-delete-item_inventory-record-ById" doc:id="34875f28-b8d0-4564-a742-70928cbc5bfb" name="del-item_inventory-record-ById" />
+    </flow>
+    <flow name="delete:\borrow\(id):lims-system-api-config">
+        <flow-ref doc:name="To-delete-borrow-ById" doc:id="20ac45e1-2765-42c5-a200-c8cad4714b23" name="del-borrow-ById" />
+    </flow>
+    <flow name="delete:\history_logs\(id):lims-system-api-config">
+        <flow-ref doc:name="To-delete-history_logs-record-ById" doc:id="48a5952f-3f41-4de7-a407-5fe0de560f6b" name="del-history_log-ById" />
+    </flow>
+    <flow name="get:\item_inventory:lims-system-api-config">
+        <flow-ref doc:name="To-get-item_inventory-record" doc:id="88edaa94-6165-4881-96d8-29c95df81e2b" name="get-item_inventory" />
+    </flow>
+    <flow name="get:\item\(id):lims-system-api-config">
+        <flow-ref doc:name="To-get-item-record-ById" doc:id="f3f89a70-0c74-49ba-96ca-6a984f8fc38c" name="get-item-ById" />
+    </flow>
+    <flow name="get:\borrow\(id):lims-system-api-config">
+        <flow-ref doc:name="To-get-borrow-record-ById" doc:id="4f60e0ab-0742-4578-b6ed-6c45273277b3" name="get-borrow-ById" />
+    </flow>
+    <flow name="get:\history_logs\(id):lims-system-api-config">
+        <flow-ref doc:name="To-get-history_log-record-ById" doc:id="02c527d3-e2c2-4746-8df8-6dc5686dba68" name="get-history_log-ById" />
+    </flow>
+    <flow name="get:\item_inventory\(id):lims-system-api-config">
+        <flow-ref doc:name="To-get-item_inventory-ById" doc:id="c683e81d-948c-4e0d-be9f-ea39a6cb533b" name="get-item_inventory-ById" />
+    </flow>
+    <flow name="post:\item_inventory:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-create-item_inventory-record" doc:id="e1a1d9a9-7be4-4f66-b914-0bcbc3e3b790" name="create-item_inventory-record" />
+    </flow>
+    <flow name="put:\item_inventory:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-update-item_inventory-record" doc:id="abd20d24-1a7c-4b0d-bc84-140012ce7a0b" name="update-item_inventory" />
+    </flow>
+    <flow name="put:\item_stock:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update item_stock record" doc:id="07b9ba91-be18-437b-8bf6-65a83342f94c" name="update-item_stock" />
+    </flow>
+    <flow name="delete:\item_stock:lims-system-api-config">
+        <flow-ref doc:name="To delete a record fro  item_stock" doc:id="e9d8873c-80aa-48a0-83e9-9cff9f71ec0d" name="del-item_stock" />
+    </flow>
+    <flow name="delete:\item_stock\(id):lims-system-api-config">
+        <flow-ref doc:name="To delete record from item_stock based on Id" doc:id="8bba54ec-5877-4e64-8d7c-faa530ba1ad9" name="del-item_stock-ById" />
+    </flow>
+    <flow name="get:\item_stock:lims-system-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="e6ec02aa-7742-4596-9907-36ba46a8ba24" name="get-item_stock" />
+    </flow>
+    <flow name="get:\item_stock\(id):lims-system-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="7f03c73e-29f5-45cd-9502-13f024285c0a" name="get-item_stock-ById" />
+    </flow>
+    <flow name="post:\item_stock:application\json:lims-system-api-config">
+        <flow-ref doc:name="Flow Reference" doc:id="122056a4-4d63-47b5-9773-67d40e1c3e20" name="Create-item_stock" />
+    </flow>
+    <flow name="put:\member:application\json:lims-system-api-config">
+        <flow-ref doc:name="To-Update-Member record from DB" doc:id="24908789-00c0-4ada-b356-ba08cb1e0c62" name="update-member" />
+    </flow>
+    <flow name="delete:\member:lims-system-api-config">
+        <flow-ref doc:name="To-Delete-Member record from DB" doc:id="cd17ae36-c17a-4d02-b9a0-993a159bfcff" name="del-member" />
+    </flow>
+    <flow name="delete:\member\(m_fname):lims-system-api-config">
+        <flow-ref doc:name="To delete member record based on Id" doc:id="560ee6fc-af99-461c-aade-4ccfc7fb2cb3" name="del-member-ById" />
+    </flow>
+    <flow name="get:\member:lims-system-api-config">
+        <flow-ref doc:name="To get all member records" doc:id="269f4e51-3bb7-4859-a226-a62e354cdf16" name="Get-member" />
+    </flow>
+    <flow name="get:\member\(m_fname):lims-system-api-config">
+        <flow-ref doc:name="To Get member record based on Id" doc:id="f7995ccc-929d-4e74-a5ea-afa847976573" name="Get-member-ById" />
+    </flow>
+    <flow name="post:\member:application\json:lims-system-api-config">
+        <flow-ref doc:name="To Create Member record into DB" doc:id="6d587c84-f10a-4a8a-a798-d0d826bd8d27" name="Create-member" />
+    </flow>
+    <flow name="put:\reservation_status:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update existed reservation status " doc:id="0abf2e9d-57dc-4691-b898-1c8f799f994b" name="update-reservation_status" />
+    </flow>
+    <flow name="delete:\reservation_status:lims-system-api-config">
+        <flow-ref doc:name="To delete reservation status" doc:id="2664a33f-6271-42ca-b1d3-2435bfadea46" name="del-reservation_status" />
+    </flow>
+    <flow name="delete:\reservation_status\(reservation_code):lims-system-api-config">
+        <flow-ref doc:name="To delete reservation status by id" doc:id="75f6a38c-c18f-4e32-8ec7-04a162a8f460" name="del-reservation_status-By-reservation_code" />
+    </flow>
+    <flow name="get:\reservation_status:lims-system-api-config">
+        <flow-ref doc:name="To get All records of reservation_status" doc:id="59292ecb-e802-4301-af40-15b248f892da" name="Get-reservation_status" />
+    </flow>
+    <flow name="get:\reservation_status\(reservation_code):lims-system-api-config">
+        <flow-ref doc:name="To get reservation status by reservation_code" doc:id="3a28748c-06dc-415d-943a-dc44b3cddbca" name="Get-reservation_statusBy-reservation_code" />
+    </flow>
+    <flow name="post:\reservation_status:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create a new reservation status in DB" doc:id="5444ac9d-25a6-4f28-8671-83d08baa72c9" name="Create-reservation_status" />
+    </flow>
+    <flow name="put:\item_transfer:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update an item_transfer record" doc:id="06390c6a-69c3-4b0a-b078-7328288cba09" name="update-item_transfer" />
+    </flow>
+    <flow name="put:\reservation:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update reservation record" doc:id="aba4c221-caf1-4dbc-8b94-3d5a0d9bc92b" name="update-reservation" />
+    </flow>
+    <flow name="put:\room:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update room record" doc:id="457cab1e-44e2-4ea9-8ef5-a6a0146b35c1" name="update-room" />
+    </flow>
+    <flow name="put:\room_equipment:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update room_equipment" doc:id="c8529c58-57f8-4731-85d1-4414d7455eba" name="update-room_equipment" />
+    </flow>
+    <flow name="put:\user:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update user record" doc:id="ef071291-3a0f-4010-b547-950e8b7bd2ee" name="update-user" />
+    </flow>
+    <flow name="delete:\item_transfer:lims-system-api-config">
+        <flow-ref doc:name="To delete an item_transfer record" doc:id="8f26a2b2-f86b-4603-a68f-dab4e7aeb243" name="del-item_transfer" />
+    </flow>
+    <flow name="delete:\reservation:lims-system-api-config">
+        <flow-ref doc:name="To delete reservation record" doc:id="110e9053-57e9-46aa-b309-3a6a08b7f33b" name="del-reservation" />
+    </flow>
+    <flow name="delete:\room:lims-system-api-config">
+        <flow-ref doc:name="To delete room record" doc:id="c0a4e632-df3b-4d9f-9388-127fd5aa9866" name="del-room" />
+    </flow>
+    <flow name="delete:\room_equipment:lims-system-api-config">
+        <flow-ref doc:name="To delete room_equipment" doc:id="7b410ea8-24ef-4c22-80d9-f1e9cd6272ab" name="del-room_equipment" />
+    </flow>
+    <flow name="delete:\user:lims-system-api-config">
+        <flow-ref doc:name="To delete user record" doc:id="3295f8c9-c81f-4a87-b1d1-6859425eca53" name="del-user" />
+    </flow>
+    <flow name="delete:\item_transfer\(id):lims-system-api-config">
+        <flow-ref doc:name="To delete an item_transfer record by Id" doc:id="e2249d4d-d263-4ca8-8d3d-f25e5d64fd66" name="del-item_transfer-ById" />
+    </flow>
+    <flow name="delete:\room_equipment\(equipment_id):lims-system-api-config">
+        <flow-ref doc:name="To delete room_equipment by id" doc:id="3e2285cc-b174-49c6-8933-c13f84a7e58a" name="del-room_equipment-ById" />
+    </flow>
+    <flow name="get:\item_transfer:lims-system-api-config">
+        <flow-ref doc:name="To get all an item_transfer records" doc:id="f174f9f8-9e5e-4dd0-8782-d1da2006b90e" name="get-item_transfer" />
+    </flow>
+    <flow name="get:\reservation:lims-system-api-config">
+        <flow-ref doc:name="To get all reservation records" doc:id="ab83e009-9d31-480a-afb4-3a272c867a2e" name="get-reservation" />
+    </flow>
+    <flow name="get:\room:lims-system-api-config">
+        <flow-ref doc:name="To get all room records" doc:id="690e9bdb-95c7-45a3-bfc0-b7c2d6f1fa7e" name="get-room" />
+    </flow>
+    <flow name="get:\room_equipment:lims-system-api-config">
+        <flow-ref doc:name="To get room_equipment" doc:id="cef8a9a2-56c6-40ef-b2df-e679fe2fbea5" name="get-room_equipment" />
+    </flow>
+    <flow name="get:\user:lims-system-api-config">
+        <flow-ref doc:name="To get all user records" doc:id="29522a63-3f7b-4033-bf55-e265ffd1d737" name="get-user" />
+    </flow>
+    <flow name="get:\room_equipment\(equipment_id):lims-system-api-config">
+        <flow-ref doc:name="To get room_equipment by id" doc:id="aa22dee8-0b1e-4bb7-b688-025c40a47570" name="get-room_equipment-ById" />
+    </flow>
+    <flow name="get:\item_transfer\(id):lims-system-api-config">
+        <flow-ref doc:name="To get an item_transfer record based on Id" doc:id="5ceaf828-b0ec-4b09-808c-8b4c70d9b52e" name="get-item_transfer-ById" />
+    </flow>
+    <flow name="post:\item_transfer:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create a new record of an item_transfer" doc:id="eba3104f-744f-4f40-abc3-ce71e34ca368" name="create-item_transfer" />
+    </flow>
+    <flow name="post:\reservation:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create a new record of reservation " doc:id="8e238935-50ef-4be7-9655-cf5384839165" name="create-reservation" />
+    </flow>
+    <flow name="post:\room:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create a new room record" doc:id="5b405cab-2872-4214-bd81-b3f0f347946d" name="create-room" />
+    </flow>
+    <flow name="post:\room_equipment:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create room_equipment" doc:id="3be6f31b-654d-415d-871d-5b06fd93e7ca" name="create-room_equipment" />
+    </flow>
+    <flow name="post:\user:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create user record" doc:id="afabce22-65fa-4e09-bdd2-1d2d85ef7e41" name="create-user" />
+    </flow>
+    <flow name="delete:\room\(rm_name):lims-system-api-config">
+        <flow-ref doc:name="To delete room based on room name" doc:id="26b68aac-5e39-412d-9d9f-e3017a21ef8a" name="del-room-by-rm_name" />
+    </flow>
+    <flow name="get:\room\(rm_name):lims-system-api-config">
+        <flow-ref doc:name="To get room based room name" doc:id="a7638840-b0a1-49c2-ae3e-493ba449fc6d" name="get-room-By-rm_name" />
+    </flow>
+    <flow name="delete:\user\(name):lims-system-api-config">
+        <flow-ref doc:name="To delete user based on name" doc:id="f47ca4e4-cb5e-4c05-ba02-4598cd9874e4" name="delete:\user\(name):lims-system-api-config" />
+    </flow>
+    <flow name="get:\user\(name):lims-system-api-config">
+        <flow-ref doc:name="To get user based on name" doc:id="c749c1df-77a7-441b-9360-6c860be3b27d" name="get-user-By-name" />
+    </flow>
+    <flow name="put:\equipment:application\json:lims-system-api-config">
+        <flow-ref doc:name="To update equipment record" doc:id="360c3d1c-4f1c-4e2f-bd41-6d89f1e3dca9" name="update-equipment" />
+    </flow>
+    <flow name="delete:\equipment:lims-system-api-config">
+        <flow-ref doc:name="To delete equipment reocrd" doc:id="1a099cd8-6375-4edf-bb4c-def4473f12de" name="del-equipment" />
+    </flow>
+    <flow name="delete:\equipment\(id):lims-system-api-config">
+        <flow-ref doc:name="To delete equipment record by id" doc:id="56136d5b-ac43-4cfa-99b9-ca8d39209405" name="del-equipment-By-id" />
+    </flow>
+    <flow name="delete:\reservation\(reservation_code):lims-system-api-config">
+        <flow-ref doc:name="To delete reservation record based on reservation_code" doc:id="e25fefc3-3ed3-44cf-b7c1-4933d4c2197d" name="del-reservation-By-reservation_code" />
+    </flow>
+    <flow name="get:\equipment:lims-system-api-config">
+        <flow-ref doc:name="To fetch all equipment records" doc:id="39ec4ebc-0e91-43c2-b22e-b6e06afc3eac" name="get-equipment" />
+    </flow>
+    <flow name="get:\equipment\(id):lims-system-api-config">
+        <flow-ref doc:name="To fetch equipment record by id" doc:id="f9bbd198-8253-4a57-8c68-e772f996d569" name="get-equipment-By-id" />
+    </flow>
+    <flow name="get:\reservation\(reservation_code):lims-system-api-config">
+        <flow-ref doc:name="To get reservation record based reservation_code" doc:id="50d91917-8249-49f5-9f6c-df0cf7247e96" name="get-reservation-By-reservation_code" />
+    </flow>
+    <flow name="post:\equipment:application\json:lims-system-api-config">
+        <flow-ref doc:name="To create new equipment record" doc:id="b7400a7e-1e93-43b9-b080-9acf5233b9a0" name="create-equipment" />
+    </flow>
+    <flow name="put:\equipment_inventory:application\json:lims-system-api-config">
+		<flow-ref doc:name="To update equipment_inventory record" doc:id="2391e535-f12e-4af0-979b-a659512d133e" name="update-equipment_inventory"/>
+    </flow>
+    <flow name="delete:\equipment_inventory:lims-system-api-config">
+		<flow-ref doc:name="To delete equipment_inventory reocrd" doc:id="b17f3627-d196-4e1e-b1f0-10e7fd8fd491" name="del-equipment_inventory"/>
+    </flow>
+    <flow name="delete:\equipment_inventory\(id):lims-system-api-config">
+		<flow-ref doc:name="To delete equipment_inventory reocrd by id" doc:id="f272b6b9-d9d1-4123-b64d-a7a961fe4f4b" name="del-equipment_inventory-By-id"/>
+    </flow>
+    <flow name="get:\equipment_inventory:lims-system-api-config">
+		<flow-ref doc:name="To fetch all equipment_inventory records" doc:id="fd58a098-ed29-4b2f-8745-e7506780acdd" name="get-equipment_inventory"/>
+    </flow>
+    <flow name="get:\equipment_inventory\(id):lims-system-api-config">
+		<flow-ref doc:name="To get equipment_inventory record based id" doc:id="33ab18ca-c6b6-49f4-a190-9af3beb5ac24" name="get-equipment_inventory-By-id"/>
+    </flow>
+    <flow name="post:\equipment_inventory:application\json:lims-system-api-config">
+		<flow-ref doc:name="To create new equipment_inventory record" doc:id="4755ee54-21f8-46a6-939d-1cf8fa9c2762" name="create-equipment_inventory"/>
+    </flow>
+</mule>
