@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:validation="http://www.mulesoft.org/schema/mule/validation" xmlns:jms="http://www.mulesoft.org/schema/mule/jms"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/validation http://www.mulesoft.org/schema/mule/validation/current/mule-validation.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="deac3915-f0db-4b43-99e4-50aa1b8f67b6" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="ddde1728-69c2-4a43-a144-2ac1221468b3" >
+		<db:mssql-connection host="172.17.0.180" instanceName="coke" user="coke_user" password="Miracle@123" databaseName="COKE" />
+	</db:config>
+	<http:listener-config name="HTTP_Listener_config2" doc:name="HTTP Listener config" doc:id="747f194e-0c74-4a11-9212-c7ac769fcbc9" >
+		<http:listener-connection host="0.0.0.0" port="8084" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="8e6ad5c6-44e9-48da-9047-099f8c8d7cf4" >
+		<file:connection workingDir="D:\MuleSoft\File connector\input" />
+	</file:config>
+	<jms:config name="JMS_Config" doc:name="JMS Config" doc:id="6e19756a-7947-41ee-bfed-6ea0af2596ec" >
+		<jms:active-mq-connection username="admin" password="admin" >
+			<jms:factory-configuration brokerUrl="tcp://localhost:61" />
+		</jms:active-mq-connection>
+	</jms:config>
+	<validation:config name="Validation_Config" doc:name="Validation Config" doc:id="f82ba3bd-399d-4e1c-9a32-8ef58ef3f73c" />
+	<flow name="usecase1.4_http-mqFlow" doc:id="90d96b8b-5268-4764-b034-2c6a6b88d20f">
+		<http:listener doc:name="Listener" doc:id="d3b292be-a704-4011-aa31-375d0494b4df" config-ref="HTTP_Listener_config" path="/file" />
+		<db:insert doc:name="Insert" doc:id="cdba3d1c-5be4-47e6-90f3-e851d3eb46b9" config-ref="Database_Config">
+			<db:sql >insert into Employee_details(Eid,Ename,Eage,Esalary)values(:Eid,:Ename,:Eage,:Esalary)</db:sql>
+			<db:input-parameters ><![CDATA[#[{
+	"Eid":payload.eid,
+	"Ename":payload.ename,
+	"Eage":payload.eage,
+	"Esalary":payload.esalary
+}]]]></db:input-parameters>
+		</db:insert>
+		<logger level="INFO" doc:name="Logger" doc:id="b10956e7-6fde-4ce3-aec4-73f782d081c9" message="inserted" />
+		<set-variable value="#[attributes.queryParams.Eid]" doc:name="Set Variable" doc:id="ee9ae983-e383-44ce-891f-48cbfcd78803" variableName="empid" mimeType="application/json" />
+		<logger level="INFO" doc:name="Logger" doc:id="4f273b46-fdd7-4a5d-a196-1bfbace939a6" message="#[vars.id]"/>
+		<flow-ref doc:name="Flow Reference" doc:id="39b68119-f03a-4120-8db9-3944dfcd925a" name="usecase1.4_http-mqSub_Flow" />
+	</flow>
+	<sub-flow name="usecase1.4_http-mqSub_Flow" doc:id="561163f2-f814-475d-b139-e7d94f4328c4" >
+		<try doc:name="Try" doc:id="f5c5ae8c-8620-4cf4-ac63-ad0420eb55c9" >
+			<db:select doc:name="Select" doc:id="9ad9c887-4082-46ef-9e16-5c6c7d19e3d9" config-ref="Database_Config">
+			<db:sql>select * from Employee_details</db:sql>
+		</db:select>
+			<logger level="ERROR" doc:name="Logger" doc:id="969703a0-bbab-4ff0-a281-188931017703" message="main flow variable: #[vars.empid]" />
+			<ee:transform doc:name="Transform Message" doc:id="d902a1bc-1713-402d-a5f8-09a211c3f5df">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+			<choice doc:name="Choice" doc:id="2e0d49aa-13e4-445f-b27e-b61f74a46c79">
+			<when expression="#[vars.empid == 4557]">
+				<ee:transform doc:name="Transform Message" doc:id="0a61294d-3de3-48ac-a332-05850bbf43ef">
+			<ee:message>
+				<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="7c0ae6be-f487-453f-a756-6b2f00546a4d" message="#[payload]" />
+				<file:write doc:name="Write" doc:id="e158f43e-7368-4578-a04f-174c5cb833a6" config-ref="File_Config" path="D:\MuleSoft\File connector\input\edatails.txt" />
+				<logger level="INFO" doc:name="Logger" doc:id="11a62050-0482-4ebb-8c60-5911c0e1ca5e" message="payload added to a given file" />
+			</when>
+			<when expression="#[vars.empid == 4643]">
+				<ee:transform doc:name="Transform Message" doc:id="557f536a-a573-438e-a963-2695dfe6ea9b">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/csv
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<logger level="INFO" doc:name="Logger" doc:id="f980f8d4-c84f-4de1-8545-ff1a69ffda2c" message="#[payload]" />
+				<jms:publish doc:name="Publish" doc:id="e61ddeba-7353-47f8-8eba-0db1e421da1a" config-ref="JMS_Config" destination="Output" />
+				<logger level="INFO" doc:name="Logger" doc:id="5377808e-578a-45ee-9c33-e549f28418fe" message="message sent to ActiveMQ" />
+			</when>
+			<otherwise>
+				<logger level="INFO" doc:name="Logger" doc:id="9d737615-89cb-4461-b8e2-667c7fdf6e09" message="Please give a valid Employee ID" />
+			</otherwise>
+		</choice>
+			<error-handler >
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="79387c50-691b-48be-9eda-9844ac9b888b" type="DB:BAD_SQL_SYNTAX">
+				<ee:transform doc:name="Transform Message" doc:id="7f119307-2ba8-4a86-82e2-e227aace4598">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":400,
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="statusCode"><![CDATA[400]]></ee:set-variable>
+						<ee:set-variable variableName="reasonPhrase"><![CDATA["SQL syntax error"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="1fad431e-c911-48fd-9ee9-4d9783672741" type="FILE:ACCESS_DENIED">
+				<ee:transform doc:name="Transform Message" doc:id="b901a1e6-0885-4cfb-b566-9eacb262a32a">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":500,
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="statusCode"><![CDATA[500]]></ee:set-variable>
+						<ee:set-variable variableName="reasonPhrase"><![CDATA["Illegal file path"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+				<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="af06e343-e67d-4318-8555-944cad43eced" type="JMS:CONNECTIVITY, JMS:DESTINATION_NOT_FOUND">
+				<ee:transform doc:name="Transform Message" doc:id="4842681d-eb69-4506-89fc-b7691434aa71">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":500,
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+					<ee:variables>
+						<ee:set-variable variableName="statusCode"><![CDATA[500]]></ee:set-variable>
+						<ee:set-variable variableName="reasonPhrase"><![CDATA["Connectivity error, plz check server connection"]]></ee:set-variable>
+					</ee:variables>
+				</ee:transform>
+			</on-error-propagate>
+			</error-handler>
+		</try>
+	</sub-flow>
+</mule>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:aggregators="http://www.mulesoft.org/schema/mule/aggregators"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/aggregators http://www.mulesoft.org/schema/mule/aggregators/current/mule-aggregators.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="cfbf5ac2-0f74-45e4-9b52-42ac68c0b159" >
+		<http:listener-connection host="0.0.0.0" port="8082" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="812ce004-2bc4-4a2f-97f4-c7fa6b557849" >
+		<file:connection workingDir="D:\MuleSoft\File connector\input" />
+	</file:config>
+	<flow name="usecase1.3_http-mqFlow" doc:id="4419d682-492f-4d73-ac90-08020172d596" >
+		<http:listener doc:name="Listener" doc:id="972d9b46-e596-4f0d-9dda-ec89cb2e3d95" config-ref="HTTP_Listener_config" path="/splitter"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b17fb142-68c0-42c3-a70c-a6f2d8f9793e" message="#[payload]"/>
+		<set-variable value="#[sizeOf(payload)]" doc:name="Set Variable" doc:id="cda552de-dfec-4cb1-91cd-b396d52712c2" variableName="size"/>
+		<foreach doc:name="For Each" doc:id="8fd499a8-0b7b-4950-9a45-016211030fc2" >
+			<set-payload value="#['Processed Record = ' ++ (payload.name as String)]" doc:name="Set Payload" doc:id="0461c29b-aa61-41af-879b-f521e1987859" />
+			<aggregators:group-based-aggregator doc:name="Group based aggregator" doc:id="73db39c6-206f-468c-b308-0ba1e1cf0aae" groupSize="#[vars.size]">
+				<aggregators:aggregation-complete >
+					<set-variable value="#[payload]" doc:name="Set Variable" doc:id="a686d67d-2c28-4c7a-8cb8-8a21bc1acda6" variableName="results"/>
+				</aggregators:aggregation-complete>
+			</aggregators:group-based-aggregator>
+		</foreach>
+		<ee:transform doc:name="Transform Message" doc:id="eff9f7a0-2ac0-41ee-9a84-6697faa15498" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+vars.results]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+	</flow>
+</mule>

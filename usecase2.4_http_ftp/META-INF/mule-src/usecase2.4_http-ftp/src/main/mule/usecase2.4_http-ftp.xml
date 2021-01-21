@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:ftp="http://www.mulesoft.org/schema/mule/ftp"
+	xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/ftp http://www.mulesoft.org/schema/mule/ftp/current/mule-ftp.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="a51ae21f-a5e2-42a8-a35e-ed09dd5863d8" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="1091511b-3c2c-4777-8061-ae62b77e602a" >
+		<file:connection workingDir="D:\MuleSoft\File connector" />
+	</file:config>
+	<flow name="usecase2.4_http-ftpFlow" doc:id="41050a2b-63ba-42f3-9f4b-bc7ebac44a92" >
+		<http:listener doc:name="Listener" doc:id="a280c1b4-c947-4cdf-8928-88f2c946ed8a" config-ref="HTTP_Listener_config" path="/ftp"/>
+		<ee:transform doc:name="Transform Message" doc:id="494de1c7-4a95-49f5-b3b0-941695d97fc8" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="a0279e7b-c912-4426-8d34-a3f7813ccd6b" >
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="3f9334cd-6281-4013-a9b4-4f132dfb05fd">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/xml
+---
+Employee:payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<ftp:write doc:name="Write" doc:id="6d6d41de-9b8c-4574-a98f-587f432fa4e9" config-ref="FTP_Config" path="emp_details.txt"/>
+				<logger level="INFO" doc:name="Logger" doc:id="13fb40c1-442c-468c-9059-42a8341c1112" message="created a file in ftp location"/>
+			</route>
+			<route >
+				<file:create-directory doc:name="Create directory" doc:id="cb878fd3-b4d7-43c4-a7be-0a2d173a97be" config-ref="File_Config" directoryPath="D:\MuleSoft\File connector\siva"/>
+				<ee:transform doc:name="Transform Message" doc:id="02edb2cd-f89e-44a5-bc97-3f293dbc18fe">
+					<ee:message>
+						<ee:set-payload><![CDATA[%dw 2.0
+output application/java
+---
+payload]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<file:write doc:name="Write" doc:id="5287cdec-f581-4a8a-a0fb-54073fc03da4" config-ref="File_Config" path="D:\MuleSoft\File connector\siva\ftp_emp_details.txt"/>
+				<logger level="INFO" doc:name="Logger" doc:id="0fb1d7e3-2e4f-4a15-b36f-fa28c9ddfcd3" message="created a file"/>
+			</route>
+		</scatter-gather>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="16c242b6-fa3f-4e1e-b8fb-cdfbe706f60e" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="14a81ff4-60bd-49c9-ac93-5a40eaaec533" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":"500",
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

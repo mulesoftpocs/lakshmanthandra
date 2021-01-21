@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core"
+	xmlns:file="http://www.mulesoft.org/schema/mule/file"
+	xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo" xmlns:db="http://www.mulesoft.org/schema/mule/db" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="54d62f4d-4e83-485c-b276-93c43f58c87e" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="db35bd90-a0cb-4f6e-8e1f-f4f7da7255b2" >
+		<file:connection workingDir="D:\MuleSoft\File connector" />
+	</file:config>
+	<db:config name="Database_Config" doc:name="Database Config" doc:id="1201fc47-4f01-4c73-86fe-68f39ae73f9b" >
+		<db:mssql-connection host="172.17.0.180" instanceName="coke" user="coke_user" password="Miracle@123" databaseName="COKE" />
+	</db:config>
+	<mongo:config name="MongoDB_Config" doc:name="MongoDB Config" doc:id="d4769bbd-1dd9-4e97-8222-0f6c1efcef8b" >
+		<mongo:connection database="Employee_details" username="spatnayak" password="Miracle@123" >
+			<mongo:server-addresses >
+				<mongo:server-address host="127.0.0.1" />
+			</mongo:server-addresses>
+		</mongo:connection>
+	</mongo:config>
+	<flow name="usecase1.2_mdb-mqFlow" doc:id="a7a2148d-2eab-4735-a71f-2feda2ac6273" >
+		<scheduler doc:name="Scheduler" doc:id="452c189b-e8ca-4463-9f9f-ee42683d38f1" >
+			<scheduling-strategy >
+				<fixed-frequency timeUnit="MINUTES"/>
+			</scheduling-strategy>
+		</scheduler>
+		<file:read doc:name="Read" doc:id="122a439d-376d-4e08-83ee-403c27e36e03" config-ref="File_Config" path="D:\MuleSoft\File connector\csv\db.csv"/>
+		<ee:transform doc:name="Transform Message" doc:id="73290f7c-dfc4-4049-b7ac-8f6ec46f2552" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload map ( payload01 , indexOfPayload01 ) -> {
+	eid: payload01.eid,
+	ename: payload01.ename,
+	esalary: payload01.esalary
+}]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<scatter-gather doc:name="Scatter-Gather" doc:id="db5e68c9-d3c4-441d-984e-e6482367ce90" >
+			<route >
+				<mongo:insert-documents doc:name="Insert documents" doc:id="d25ba1d2-a796-44bc-8ae2-90183ece4d90" config-ref="MongoDB_Config" collectionName="Employees" />
+				<logger level="INFO" doc:name="Logger" doc:id="9faf0a1d-333f-4175-b253-93d3569e2b2e" message="inserted" />
+			</route>
+			<route >
+				<jms:publish doc:name="Publish" doc:id="faebfec2-aaa9-41ec-9d69-75cb8f3d69de" config-ref="JMS_Config" destination="Output"/>
+				<logger level="INFO" doc:name="Logger" doc:id="83d66fbd-4ea5-4590-be49-b655f111ffd4" message="message sent successfully" />
+			</route>
+			<route >
+				<ee:transform doc:name="Transform Message" doc:id="87945392-a2ad-4e6d-ae69-024dc3dcafee" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/xml
+---
+{
+	Employees: {
+		eid: payload.eid,
+		ename: payload.ename,
+		esalary: payload.esalary
+	}
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+				<file:write doc:name="Write" doc:id="6d47f18f-666f-4e7f-8ff5-a6e045ad877f" config-ref="File_Config" path="D:\MuleSoft\File connector\input\csv.xml.txt"/>
+				<logger level="INFO" doc:name="Logger" doc:id="6b8e6ff8-e25e-46f6-b37e-c264f7bbde3c" message="added successfully"/>
+			</route>
+		</scatter-gather>
+		<logger level="INFO" doc:name="Logger" doc:id="83ef139a-8aea-43bb-ae44-7a6e502aefc9" message="Successfully data sent to a apropriate targets"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="b202997c-90c5-473c-9400-010e47fd7ebd" type="ANY">
+				<logger level="INFO" doc:name="Logger" doc:id="79c7d668-f3f2-4e62-bb56-32618e2f669b" message='#[%dw 2.0
+output application/json
+---
+{
+	"status":"500",
+	"message":error.description
+}]'/>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>

@@ -1,0 +1,10 @@
+{
+  "sampleData": {
+    "7ef1f386-c40a-455c-815c-32ec29dc065e": {
+      "payload": "sample_data/list_unknown.csv"
+    },
+    "7384a761-2619-4f95-85b1-e107c91bea2b": {
+      "payload": "sample_data/object.dwl"
+    }
+  }
+}

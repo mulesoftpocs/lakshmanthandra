@@ -1,0 +1,64 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<types:mule xmlns:types="http://www.mulesoft.org/schema/mule/types">
+  <types:catalog>
+    <types:type name="csv" format="csv">
+      <types:shape format="weave" example="examples/db.csv"><![CDATA[%dw 2.0
+
+type csv = Array<{|  eid: Number,   ename: String,   esalary: Number|}>
+
+]]></types:shape>
+      <types:properties>
+        <types:property name="headerLineNumber" value="0"/>
+        <types:property name="header" value="true"/>
+        <types:property name="isQuotedString" value="false"/>
+      </types:properties>
+    </types:type>
+    <types:type name="outputcsv" format="json">
+      <types:shape format="weave" example="examples/csv.json"><![CDATA[%dw 2.0
+
+type outputcsv = Array<{|  eid: Number {"typeId": "int"},   ename: String,   esalary: Number {"typeId": "int"}|}> {"example": "[{\\\"eid\\\":4662,\\\"ename\\\":\\\"Siva\\\\\\\"\\\",\\\"esalary\\\":12000}]"}
+
+]]></types:shape>
+    </types:type>
+    <types:type name="csvxml" format="xml">
+      <types:example format="xml" element="Employees" location="examples/csv.xml"/>
+    </types:type>
+  </types:catalog>
+  <types:enrichment select="#7ef1f386-c40a-455c-815c-32ec29dc065e">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="csv"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="outputcsv"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#73290f7c-dfc4-4049-b7ac-8f6ec46f2552">
+    <types:processor-declaration>
+      <types:input-event>
+        <types:message>
+          <types:payload type="csv"/>
+        </types:message>
+      </types:input-event>
+      <types:output-event>
+        <types:message>
+          <types:payload type="outputcsv"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+  <types:enrichment select="#87945392-a2ad-4e6d-ae69-024dc3dcafee">
+    <types:processor-declaration>
+      <types:output-event>
+        <types:message>
+          <types:payload type="csvxml"/>
+        </types:message>
+      </types:output-event>
+    </types:processor-declaration>
+  </types:enrichment>
+</types:mule>

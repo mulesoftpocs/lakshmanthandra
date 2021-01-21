@@ -1,0 +1,29 @@
+{
+  "configs": [
+    "usecase1.5_file_append.xml"
+  ],
+  "secureProperties": [],
+  "redeploymentEnabled": true,
+  "name": "com.mycompany:usecase1.5_file_append:1.0.0-SNAPSHOT",
+  "minMuleVersion": "4.2.2",
+  "requiredProduct": "MULE_EE",
+  "classLoaderModelLoaderDescriptor": {
+    "id": "mule",
+    "attributes": {
+      "exportedPackages": [],
+      "exportedResources": [
+        "application-types.xml",
+        "examples/bdetails1-1.xml",
+        "examples/bdetails1-2.xml",
+        "examples/bdetails1.xml",
+        "examples/bdetails2.xml",
+        "log4j2.xml",
+        "usecase1.5_file_append.xml"
+      ]
+    }
+  },
+  "bundleDescriptorLoader": {
+    "id": "mule",
+    "attributes": {}
+  }
+}

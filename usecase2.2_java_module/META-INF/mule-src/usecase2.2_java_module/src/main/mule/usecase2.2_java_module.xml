@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:ee="http://www.mulesoft.org/schema/mule/ee/core" xmlns:mongo="http://www.mulesoft.org/schema/mule/mongo"
+	xmlns:db="http://www.mulesoft.org/schema/mule/db"
+	xmlns:jms="http://www.mulesoft.org/schema/mule/jms" xmlns:file="http://www.mulesoft.org/schema/mule/file" xmlns:java="http://www.mulesoft.org/schema/mule/java" xmlns:http="http://www.mulesoft.org/schema/mule/http" xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd
+http://www.mulesoft.org/schema/mule/java http://www.mulesoft.org/schema/mule/java/current/mule-java.xsd
+http://www.mulesoft.org/schema/mule/file http://www.mulesoft.org/schema/mule/file/current/mule-file.xsd
+http://www.mulesoft.org/schema/mule/jms http://www.mulesoft.org/schema/mule/jms/current/mule-jms.xsd
+http://www.mulesoft.org/schema/mule/db http://www.mulesoft.org/schema/mule/db/current/mule-db.xsd
+http://www.mulesoft.org/schema/mule/ee/core http://www.mulesoft.org/schema/mule/ee/core/current/mule-ee.xsd
+http://www.mulesoft.org/schema/mule/mongo http://www.mulesoft.org/schema/mule/mongo/current/mule-mongo.xsd">
+	<http:listener-config name="HTTP_Listener_config" doc:name="HTTP Listener config" doc:id="554303c6-c951-4243-8906-5a24dcb1f28b" >
+		<http:listener-connection host="0.0.0.0" port="8081" />
+	</http:listener-config>
+	<file:config name="File_Config" doc:name="File Config" doc:id="914152d3-87e8-4875-a626-f777a00cf3eb" >
+		<file:connection workingDir="D:\MuleSoft\File connector\db" />
+	</file:config>
+	<flow name="usecase2.2_java_moduleFlow" doc:id="ddbdfe92-0015-4d34-8f19-13fca5eac6b3" >
+		<http:listener doc:name="Listener" doc:id="084e6c2a-7e18-4733-8d29-a8680ff63838" config-ref="HTTP_Listener_config" path="/java"/>
+		<java:invoke-static method="sayHello(String,String)" doc:name="Invoke static" doc:id="81d16607-e937-4b30-a5fe-3d526ed913ee" class="com.miraclesoft.StockQouteService">
+			<java:args ><![CDATA[#[%dw 2.0
+output application/java
+---
+{
+	name: attributes.queryParams.name as String,
+	country: attributes.queryParams.country as String
+}]]]></java:args>
+		</java:invoke-static>
+		<logger level="INFO" doc:name="Logger" doc:id="7722828e-302c-4023-a35d-9785479efc76" message="#[payload]"/>
+		<file:write doc:id="a656281b-6192-4ef7-bf3f-8d0ea92304b2" config-ref="File_Config" path="#[&quot;MyFile&quot; ++ (now()as String{format:&quot;yyyy-mm-dd-mm-ss&quot;}) ++ '.txt']" />
+		<logger level="INFO" doc:name="Logger" doc:id="28639b6e-b131-4d8a-97d8-99f4a4f2ceb1" message="file added" />
+		<mongo:create-file doc:name="Create file" doc:id="9a74b411-eebc-43ce-befd-074591c8d2dd" config-ref="MongoDB_Config" filename="#[&quot;MyFile&quot; ++ (now()as String{format:&quot;yyyy-mm-dd-mm-ss&quot;}) ++ '.json']"/>
+		<ee:transform doc:name="Transform Message" doc:id="e0d2c356-1c1c-4e87-bcc6-e412a29cf21f" >
+			<ee:message >
+				<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+payload]]></ee:set-payload>
+			</ee:message>
+		</ee:transform>
+		<jms:publish doc:name="Publish" doc:id="928dbfaf-f525-40f3-9cc5-4a3c200cbfa3" config-ref="JMS_Config" destination="Output"/>
+		<logger level="INFO" doc:name="Logger" doc:id="b9ac85f5-fd95-41f5-a460-b7a3e34dc87d" message="message sent successfully"/>
+		<error-handler >
+			<on-error-propagate enableNotifications="true" logException="true" doc:name="On Error Propagate" doc:id="dc122805-52df-4bcf-8cb6-d7b6c77ef7f1" type="ANY">
+				<ee:transform doc:name="Transform Message" doc:id="6f804238-dc23-492e-b72d-fea7553e57df" >
+					<ee:message >
+						<ee:set-payload ><![CDATA[%dw 2.0
+output application/json
+---
+{
+	"status":"500",
+	"message":error.description
+}]]></ee:set-payload>
+					</ee:message>
+				</ee:transform>
+			</on-error-propagate>
+		</error-handler>
+	</flow>
+</mule>
